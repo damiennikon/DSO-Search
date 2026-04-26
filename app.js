@@ -33,24 +33,24 @@ const dsoDatabase = [
 ];
 
 const icons = {
-    "Galaxy": `<img src="Galaxy.png" alt="Galaxy" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
-    "Nebula": `<img src="Nebula.png" alt="Nebula" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
-    "Globular Cluster": `<img src="Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
-    "Open Cluster": `<img src="Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`
+    "Galaxy": `<img src="./Galaxy.png" alt="Galaxy" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
+    "Nebula": `<img src="./Nebula.png" alt="Nebula" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
+    "Globular Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
+    "Open Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`
 };
 
-let isListExpanded = false; // State to track the "Show More" button
+let isListExpanded = false; 
 
 // --- 2. DYNAMIC DOM RENDERER ---
 function renderDSOList() {
     const listContainer = document.getElementById('dsoList');
-    listContainer.innerHTML = '';
+    listContainer.innerHTML = ''; 
 
     dsoDatabase.forEach(dso => {
         const button = document.createElement('button');
-        button.className = 'dso-item dimmed';
+        button.className = 'dso-item dimmed'; 
         button.id = `list-target-${dso.id.replace(/\s+/g, '')}`;
-
+        
         button.innerHTML = `
             <div class="dso-icon">${icons[dso.type]}</div>
             <div class="dso-text-group">
@@ -60,7 +60,7 @@ function renderDSOList() {
             </div>
             <div class="dso-arrow">›</div>
         `;
-
+        
         button.addEventListener('click', () => openInfoModal(dso));
         listContainer.appendChild(button);
     });
@@ -70,24 +70,31 @@ function renderDSOList() {
 const searchInput = document.getElementById('dsoSearchInput');
 const clearBtn = document.getElementById('clearSearchBtn');
 
-searchInput.addEventListener('input', function () {
-    clearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
-    updateDSOVisibility();
-});
+if(searchInput) {
+    searchInput.addEventListener('input', function() {
+        if(clearBtn) clearBtn.style.display = this.value.length > 0 ? 'flex' : 'none';
+        updateDSOVisibility();
+    });
+}
 
-clearBtn.addEventListener('click', function () {
-    searchInput.value = '';
-    clearBtn.style.display = 'none';
-    isListExpanded = false; // Reset to top 4 when clearing search
-    updateDSOVisibility();
-    searchInput.focus();
-});
+if(clearBtn) {
+    clearBtn.addEventListener('click', function() {
+        if(searchInput) searchInput.value = '';
+        this.style.display = 'none';
+        isListExpanded = false; 
+        updateDSOVisibility();
+        if(searchInput) searchInput.focus(); 
+    });
+}
 
 // Show More Button Logic
-document.getElementById('showMoreBtn').addEventListener('click', () => {
-    isListExpanded = !isListExpanded;
-    updateDSOVisibility();
-});
+const showMoreBtn = document.getElementById('showMoreBtn');
+if(showMoreBtn) {
+    showMoreBtn.addEventListener('click', () => {
+        isListExpanded = !isListExpanded;
+        updateDSOVisibility();
+    });
+}
 
 // --- 3. THE MATH ENGINES ---
 const D2R = Math.PI / 180;
@@ -109,7 +116,7 @@ function calculateAltAz(ra, dec, lat, lon, date) {
     const altRad = Math.asin(sinAlt);
     const alt = altRad * R2D;
     const cosAz = (Math.sin(decRad) - Math.sin(altRad) * Math.sin(latRad)) / (Math.cos(altRad) * Math.cos(latRad));
-    let safeCosAz = Math.max(-1, Math.min(1, cosAz));
+    let safeCosAz = Math.max(-1, Math.min(1, cosAz)); 
     let azRad = Math.acos(safeCosAz);
     let az = azRad * R2D;
     if (Math.sin(haRad) > 0) az = 360 - az;
@@ -136,17 +143,18 @@ let userLon = null;
 function updateDSOVisibility() {
     if (!userLat || !userLon) return;
     const rightNow = new Date();
-
+    
     const sunCoords = getSunPosition(rightNow);
     const sunPos = calculateAltAz(sunCoords.ra, sunCoords.dec, userLat, userLon, rightNow);
-    const isNight = sunPos.altitude <= -18;
-
+    const isNight = sunPos.altitude <= -18; 
+    
     const listContainer = document.getElementById('dsoList');
+    if(!listContainer) return;
+
     const existingMsg = document.getElementById('status-msg');
     if (existingMsg) existingMsg.remove();
 
-    const currentSearch = searchInput.value.toLowerCase().trim();
-    const showMoreBtn = document.getElementById('showMoreBtn');
+    const currentSearch = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
     // --- DAYTIME LOCKDOWN ---
     if (!isNight && currentSearch === '') {
@@ -154,7 +162,7 @@ function updateDSOVisibility() {
             const targetElement = document.getElementById(`list-target-${dso.id.replace(/\s+/g, '')}`);
             if (targetElement) targetElement.style.display = 'none';
         });
-        showMoreBtn.style.display = 'none';
+        if(showMoreBtn) showMoreBtn.style.display = 'none';
 
         const sunMessage = document.createElement('div');
         sunMessage.id = 'status-msg';
@@ -163,9 +171,9 @@ function updateDSOVisibility() {
         sunMessage.style.padding = '20px';
         sunMessage.innerHTML = `<strong>Waiting for nightfall...</strong><br>The sun is currently at ${sunPos.altitude}°.<br>True darkness begins at -18°.<br><br><em>Use the search bar above to browse the catalog.</em>`;
         listContainer.appendChild(sunMessage);
-        return;
+        return; 
     }
-
+    
     // --- EVALUATE EVERY ITEM ---
     let visibleIndex = 0;
     let totalAvailable = 0;
@@ -174,9 +182,9 @@ function updateDSOVisibility() {
         const position = calculateAltAz(dso.ra, dso.dec, userLat, userLon, rightNow);
         const button = document.getElementById(`list-target-${dso.id.replace(/\s+/g, '')}`);
         if (!button) return;
-
+        
         const statusText = button.querySelector('.dso-status');
-
+        
         if (position.altitude < 0) {
             button.classList.add('dimmed');
             statusText.innerText = "BELOW HORIZON";
@@ -190,16 +198,15 @@ function updateDSOVisibility() {
             statusText.innerText = "VISIBLE";
             statusText.className = "dso-status status-up";
         }
-
+        
         const isMatch = currentSearch === '' || dso.id.toLowerCase().includes(currentSearch) || dso.name.toLowerCase().includes(currentSearch);
-
+        
         if (isMatch) {
             totalAvailable++;
-
+            
             if (currentSearch !== '') {
-                button.style.display = 'flex'; // Show everything if searching
+                button.style.display = 'flex'; 
             } else {
-                // If not searching, apply the "Show More" top-4 limit
                 if (isListExpanded || visibleIndex < 4) {
                     button.style.display = 'flex';
                 } else {
@@ -213,11 +220,13 @@ function updateDSOVisibility() {
     });
 
     // --- BUTTON TOGGLE LOGIC ---
-    if (currentSearch === '' && totalAvailable > 4) {
-        showMoreBtn.style.display = 'block';
-        showMoreBtn.innerText = isListExpanded ? 'Show Less' : `Show All (${totalAvailable - 4} hidden)`;
-    } else {
-        showMoreBtn.style.display = 'none';
+    if (showMoreBtn) {
+        if (currentSearch === '' && totalAvailable > 4) {
+            showMoreBtn.style.display = 'block';
+            showMoreBtn.innerText = isListExpanded ? 'Show Less' : `Show All (${totalAvailable - 4} hidden)`;
+        } else {
+            showMoreBtn.style.display = 'none';
+        }
     }
 }
 
@@ -234,23 +243,23 @@ if ("geolocation" in navigator) {
             console.error("GPS Error:", error.message);
             document.querySelectorAll('.dso-status').forEach(el => {
                 el.innerText = "GPS ERROR: Check Permissions";
-                el.style.color = "#ff0000";
+                el.style.color = "#ff0000"; 
             });
         },
         { enableHighAccuracy: true, timeout: 10000 }
     );
 } else {
-    document.querySelectorAll('.dso-status').forEach(el => {
+     document.querySelectorAll('.dso-status').forEach(el => {
         el.innerText = "GPS NOT SUPPORTED";
     });
 }
 
 // --- 5. INFO MODAL LOGIC ---
-let activeDSO = null;
+let activeDSO = null; 
 
 function openInfoModal(dso) {
     activeDSO = dso;
-
+    
     document.getElementById('modalTitle').innerText = dso.name;
     document.getElementById('modalId').innerText = dso.id;
     document.getElementById('modalIcon').innerHTML = icons[dso.type];
@@ -306,8 +315,17 @@ let activeStream = null;
 function handleAR(event) {
     if (!activeDSO || !userLat || !userLon) return;
 
-    let phoneAz = event.webkitCompassHeading || (360 - event.alpha);
-    let phoneAlt = event.beta - 90;
+    // --- MAGNETIC DECLINATION OFFSET ---
+    // Offset is ~11 degrees East (+11) for SE Queensland. 
+    const declinationOffset = 11; 
+
+    let rawAz = event.webkitCompassHeading || (360 - event.alpha);
+    
+    // Convert Magnetic North to True North
+    let phoneAz = (rawAz + declinationOffset) % 360;
+    if (phoneAz < 0) phoneAz += 360; 
+
+    let phoneAlt = event.beta - 90; 
 
     document.getElementById('compassNeedle').style.transform = `rotate(${-phoneAz}deg)`;
 
@@ -324,12 +342,12 @@ function handleAR(event) {
     const arrow = document.getElementById('directionArrow');
 
     if (distanceToTarget < 5) {
-        arrow.style.display = 'none';
+        arrow.style.display = 'none'; 
         dot.style.backgroundColor = '#00ff00';
         dot.style.boxShadow = '0 0 15px #00ff00, 0 0 30px #00ff00';
         dot.style.transform = 'translate(-50%, -50%) scale(1.5)';
     } else {
-        arrow.style.display = 'block';
+        arrow.style.display = 'block'; 
         dot.style.backgroundColor = '#ffff00';
         dot.style.boxShadow = '0 0 10px #ffff00, 0 0 20px #ffff00';
         dot.style.transform = 'translate(-50%, -50%) scale(1)';
@@ -343,15 +361,15 @@ function handleAR(event) {
 function openCamera(dso) {
     const cameraUI = document.getElementById('cameraUI');
     const cameraFeed = document.getElementById('cameraFeed');
-
+    
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(function (stream) {
+            .then(function(stream) {
                 activeStream = stream;
                 cameraFeed.srcObject = stream;
-
+                
                 document.getElementById('activeTargetName').innerText = dso.name;
-
+                
                 document.querySelector('main').style.display = 'none';
                 document.querySelector('.app-header').style.display = 'none';
                 cameraUI.style.display = 'block';
@@ -371,7 +389,7 @@ function openCamera(dso) {
                     }
                 }
             })
-            .catch(function (error) {
+            .catch(function(error) {
                 console.error("Camera error:", error);
                 alert("Could not access the camera.");
             });
@@ -382,14 +400,14 @@ function closeCamera() {
     if (activeStream) {
         activeStream.getTracks().forEach(track => track.stop());
     }
-
+    
     window.removeEventListener('deviceorientation', handleAR);
     window.removeEventListener('deviceorientationabsolute', handleAR);
-
+    
     document.getElementById('cameraUI').style.display = 'none';
     document.querySelector('main').style.display = 'block';
     document.querySelector('.app-header').style.display = 'block';
-
+    
     document.getElementById('directionArrow').style.display = 'none';
     document.getElementById('yellowDot').style.display = 'none';
 }
@@ -406,7 +424,7 @@ async function requestWakeLock() {
         if ('wakeLock' in navigator) {
             wakeLock = await navigator.wakeLock.request('screen');
             console.log('Screen Wake Lock active');
-
+            
             wakeLock.addEventListener('release', () => {
                 console.log('Screen Wake Lock released');
             });
