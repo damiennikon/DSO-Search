@@ -115,14 +115,40 @@
         </div>
     </div>
 
+    <div id="updateToast" style="display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary-red); color: #000; padding: 15px 25px; border-radius: 30px; font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 0.9rem; z-index: 1000; box-shadow: 0 0 20px #ff0000; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;">
+        Update Available! Tap to reload.
+    </div>
+
     <script src="./app.js"></script>
     
     <script>
+        let newWorker;
+        const updateToast = document.getElementById('updateToast');
+
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registered!'))
-                    .catch(err => console.error('Service Worker registration failed: ', err));
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+                reg.addEventListener('updatefound', () => {
+                    newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            updateToast.style.display = 'block';
+                        }
+                    });
+                });
+            });
+
+            updateToast.addEventListener('click', () => {
+                if (newWorker) {
+                    newWorker.postMessage('SKIP_WAITING');
+                }
+            });
+
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    window.location.reload();
+                    refreshing = true;
+                }
             });
         }
     </script>
