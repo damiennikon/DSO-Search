@@ -1,16 +1,16 @@
-const CACHE_NAME = 'dso-tracker-v3'; // Upgraded to v3!
+const CACHE_NAME = 'dso-tracker-v4'; 
 
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
-  '/Galaxy.png',
-  '/Nebula.png',
-  '/Cluster.png',
-  '/icon-192.png',
-  '/icon-512.png'
+  './',
+  './index.html',
+  './styles.css',
+  './app.js',
+  './manifest.json',
+  './Galaxy.png',
+  './Nebula.png',
+  './Cluster.png',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // Install Event - Caches the files and forces immediate takeover
@@ -24,7 +24,7 @@ self.addEventListener('install', event => {
   self.skipWaiting(); 
 });
 
-// Activate Event - Wipes out the old Zombie Cache (v1)
+// Activate Event - Wipes out the old Zombie Cache
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
