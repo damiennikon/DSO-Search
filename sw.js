@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dso-tracker-v2'; // Upgraded to v2!
+const CACHE_NAME = 'dso-tracker-v3'; // Upgraded to v3!
 
 const ASSETS_TO_CACHE = [
   '/',
