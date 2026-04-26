@@ -10,7 +10,7 @@ const dsoDatabase = [
     { id: "NGC 104", name: "47 Tucanae", ra: 6.0, dec: -72.08, type: "Globular Cluster", dist: "13,000 ly", season: "Spring", desc: "The second brightest globular cluster in the sky, appearing as a dense, bright ball of light." },
     { id: "LMC", name: "Large Magellanic Cloud", ra: 80.9, dec: -69.75, type: "Galaxy", dist: "163,000 ly", season: "Summer", desc: "A satellite dwarf galaxy of the Milky Way, rich in gas, dust, and brilliant star-forming regions." },
     { id: "SMC", name: "Small Magellanic Cloud", ra: 13.2, dec: -72.8, type: "Galaxy", dist: "200,000 ly", season: "Spring", desc: "The smaller sibling to the LMC. Heavily disrupted by gravitational interactions with the Milky Way." },
-    { id: "NGC 5128", name: "Centaurus A", ra: 201.3, dec: -43.0, type: "Galaxy", dist: "13 Million ly", season: "Autumn", desc: "A massive peculiar galaxy characterized by a thick, dark dust lane crossing its center." },
+    { id: "NGC 5128", name: "Centaurus A", ra: 201.3, dec: -43.0, type: "Galaxy", dist: "13 Million ly", dist: "Autumn", desc: "A massive peculiar galaxy characterized by a thick, dark dust lane crossing its center." },
     { id: "NGC 4755", name: "Jewel Box Cluster", ra: 193.4, dec: -60.3, type: "Open Cluster", dist: "6,440 ly", season: "Autumn", desc: "A stunning open cluster near the Southern Cross with bright blue supergiants and a solitary red supergiant." },
     { id: "M 31", name: "Andromeda Galaxy", ra: 10.684, dec: 41.269, type: "Galaxy", dist: "2.5 Million ly", season: "Spring", desc: "The closest major galaxy to the Milky Way." },
     { id: "M 8", name: "Lagoon Nebula", ra: 270.9, dec: -24.3, type: "Nebula", dist: "4,100 ly", season: "Winter", desc: "A giant interstellar cloud in the constellation Sagittarius featuring a prominent dark dust lane." },
@@ -235,16 +235,28 @@ renderDSOList();
 if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
         (position) => {
+            // SUCCESS: We got a live satellite lock
             userLat = position.coords.latitude;
             userLon = position.coords.longitude;
             updateDSOVisibility();
         },
         (error) => {
+            // FAILED: GPS timed out or was denied (likely indoors)
             console.error("GPS Error:", error.message);
-            document.querySelectorAll('.dso-status').forEach(el => {
-                el.innerText = "GPS ERROR: Check Permissions";
-                el.style.color = "#ff0000"; 
-            });
+            
+            // FALLBACK: South-East Queensland (keeps the math working indoors)
+            userLat = -27.58; 
+            userLon = 153.03; 
+            
+            updateDSOVisibility(); 
+            
+            // Add a tiny note to the daytime screen letting you know it's using the fallback
+            setTimeout(() => {
+                const existingMsg = document.getElementById('status-msg');
+                if (existingMsg) {
+                    existingMsg.innerHTML += `<br><br><span style="color:#ffaa00; font-size:0.75rem;">(Note: Live GPS signal lost. Using SE QLD fallback location).</span>`;
+                }
+            }, 100);
         },
         { enableHighAccuracy: true, timeout: 10000 }
     );
