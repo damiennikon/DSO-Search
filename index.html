@@ -1,139 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DSO Search</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="data:,">
-  <link rel="manifest" href="manifest.json">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@400;500&display=swap"
-    rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DSO Search</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="icon" href="data:,">
+    <link rel="manifest" href="./manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 </head>
-
 <body>
-  <header class="app-header">
-    <svg class="header-graphic" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="100" cy="100" r="40" fill="none" stroke="#ff0000" stroke-width="1" opacity="0.8" />
-      <circle cx="100" cy="100" r="60" fill="none" stroke="#ff0000" stroke-width="1" opacity="0.5" />
-      <circle cx="100" cy="100" r="80" fill="none" stroke="#ff0000" stroke-width="0.5" opacity="0.3" />
-      <circle cx="100" cy="100" r="100" fill="none" stroke="#ff0000" stroke-width="0.2" opacity="0.2" />
-      <path d="M100 90 L102 98 L110 100 L102 102 L100 110 L98 102 L90 100 L98 98 Z" fill="#ff0000"
-        filter="drop-shadow(0px 0px 4px #ff0000)" />
-      <circle cx="60" cy="100" r="2" fill="#ff0000" />
-      <circle cx="140" cy="100" r="2" fill="#ff0000" />
-      <circle cx="100" cy="60" r="3" fill="#ff0000" filter="drop-shadow(0px 0px 3px #ff0000)" />
-      <circle cx="120" cy="71" r="2" fill="#ff0000" />
-      <circle cx="75" cy="68" r="1.5" fill="#ff0000" />
-    </svg>
-    <h1>DSO Search</h1>
-  </header>
-
-  <main>
-    <div class="search-container">
-      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="2" stroke-linecap="round"
-        stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      <input type="text" placeholder="Search 30+ objects..." id="dsoSearchInput">
-      <button id="clearSearchBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-          stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
+    <header class="app-header">
+        <svg class="header-graphic" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="40" fill="none" stroke="#ff0000" stroke-width="1" opacity="0.8"/>
+            <circle cx="100" cy="100" r="60" fill="none" stroke="#ff0000" stroke-width="1" opacity="0.5"/>
+            <circle cx="100" cy="100" r="80" fill="none" stroke="#ff0000" stroke-width="0.5" opacity="0.3"/>
+            <circle cx="100" cy="100" r="100" fill="none" stroke="#ff0000" stroke-width="0.2" opacity="0.2"/>
+            <path d="M100 90 L102 98 L110 100 L102 102 L100 110 L98 102 L90 100 L98 98 Z" fill="#ff0000" filter="drop-shadow(0px 0px 4px #ff0000)"/>
+            <circle cx="60" cy="100" r="2" fill="#ff0000"/>
+            <circle cx="140" cy="100" r="2" fill="#ff0000"/>
+            <circle cx="100" cy="60" r="3" fill="#ff0000" filter="drop-shadow(0px 0px 3px #ff0000)"/>
+            <circle cx="120" cy="71" r="2" fill="#ff0000"/>
+            <circle cx="75" cy="68" r="1.5" fill="#ff0000"/>
         </svg>
-      </button>
+        <h1>DSO Search</h1>
+    </header>
+
+    <main>
+        <div class="search-container">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" placeholder="Search 30+ objects..." id="dsoSearchInput">
+            <button id="clearSearchBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="section-divider">
+            <div class="line"></div>
+            <span>southern catalog</span>
+            <div class="line"></div>
+        </div>
+
+        <div class="dso-list" id="dsoList"></div>
+        
+        <button id="showMoreBtn" style="display: none;">Show More</button>
+    </main>
+
+    <div id="infoModal" style="display: none;">
+        <div class="modal-content">
+            <button id="closeModalBtn">×</button>
+            <div id="modalIcon"></div>
+            <h2 id="modalTitle">Name</h2>
+            <div class="modal-badge" id="modalId">ID</div>
+
+            <div class="modal-stats">
+                <div class="stat-box"><span>Type</span><br><b id="modalType">--</b></div>
+                <div class="stat-box"><span>Distance</span><br><b id="modalDist">--</b></div>
+                <div class="stat-box"><span>Best Season</span><br><b id="modalSeason">--</b></div>
+            </div>
+
+            <p id="modalDesc">--</p>
+
+            <div id="modalStatusArea">
+                <div id="modalAlt">Altitude: Calculating...</div>
+                <button id="locateBtn">Locate in Sky</button>
+            </div>
+        </div>
     </div>
 
-    <div class="section-divider">
-      <div class="line"></div>
-      <span>southern catalog</span>
-      <div class="line"></div>
+    <div id="cameraUI" style="display: none;">
+        <video id="cameraFeed" autoplay playsinline></video>
+        
+        <div id="targetHUD">
+            <button id="backButton">‹ Cancel</button>
+            <div id="targetLabel">Hunting: <span id="activeTargetName"></span></div>
+            <button id="openCalBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4Z"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div id="yellowDot"></div>
+        <div id="directionArrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"></line>
+                <polyline points="5 12 12 5 19 12"></polyline>
+            </svg>
+        </div>
+
+        <div id="miniCompass">
+            <div id="compassNeedle"></div>
+            <div class="compass-label compass-n">N</div>
+            <div class="compass-label compass-e">E</div>
+            <div class="compass-label compass-s">S</div>
+            <div class="compass-label compass-w">W</div>
+        </div>
+
+        <div id="calOverlay">
+            <div class="cal-box">
+                <h3>Compass Drift?</h3>
+                <p>Move your phone in a large Figure-8 motion for 5 seconds to recalibrate the hardware sensors.</p>
+                <svg class="figure8" viewBox="0 0 100 50" fill="none" stroke="#ff0000" stroke-width="4">
+                    <path d="M25,25 C25,10 40,10 50,25 C60,40 75,40 75,25 C75,10 60,10 50,25 C40,40 25,40 25,25 Z"/>
+                </svg>
+                <button id="closeCalBtn">I'm Done</button>
+            </div>
+        </div>
     </div>
 
-    <div class="dso-list" id="dsoList"></div>
-
-    <button id="showMoreBtn" style="display: none;">Show More</button>
-  </main>
-
-  <div id="infoModal" style="display: none;">
-    <div class="modal-content">
-      <button id="closeModalBtn">×</button>
-      <div id="modalIcon"></div>
-      <h2 id="modalTitle">Name</h2>
-      <div class="modal-badge" id="modalId">ID</div>
-
-      <div class="modal-stats">
-        <div class="stat-box"><span>Type</span><br><b id="modalType">--</b></div>
-        <div class="stat-box"><span>Distance</span><br><b id="modalDist">--</b></div>
-        <div class="stat-box"><span>Best Season</span><br><b id="modalSeason">--</b></div>
-      </div>
-
-      <p id="modalDesc">--</p>
-
-      <div id="modalStatusArea">
-        <div id="modalAlt">Altitude: Calculating...</div>
-        <button id="locateBtn">Locate in Sky</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="cameraUI" style="display: none;">
-    <video id="cameraFeed" autoplay playsinline></video>
-
-    <div id="targetHUD">
-      <button id="backButton">‹ Cancel</button>
-      <div id="targetLabel">Hunting: <span id="activeTargetName"></span></div>
-      <button id="openCalBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-          stroke-linejoin="round">
-          <path
-            d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4Z" />
-        </svg>
-      </button>
-    </div>
-
-    <div id="yellowDot"></div>
-    <div id="directionArrow">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-        stroke-linejoin="round">
-        <line x1="12" y1="19" x2="12" y2="5"></line>
-        <polyline points="5 12 12 5 19 12"></polyline>
-      </svg>
-    </div>
-
-    <div id="miniCompass">
-      <div id="compassNeedle"></div>
-      <div class="compass-label compass-n">N</div>
-      <div class="compass-label compass-e">E</div>
-      <div class="compass-label compass-s">S</div>
-      <div class="compass-label compass-w">W</div>
-    </div>
-
-    <div id="calOverlay">
-      <div class="cal-box">
-        <h3>Compass Drift?</h3>
-        <p>Move your phone in a large Figure-8 motion for 5 seconds to recalibrate the hardware sensors.</p>
-        <svg class="figure8" viewBox="0 0 100 50" fill="none" stroke="#ff0000" stroke-width="4">
-          <path d="M25,25 C25,10 40,10 50,25 C60,40 75,40 75,25 C75,10 60,10 50,25 C40,40 25,40 25,25 Z" />
-        </svg>
-        <button id="closeCalBtn">I'm Done</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('Service Worker registered!'))
-          .catch(err => console.error('Service Worker registration failed: ', err));
-      });
-    }
-  </script>
+    <script src="./app.js"></script>
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registered!'))
+                    .catch(err => console.error('Service Worker registration failed: ', err));
+            });
+        }
+    </script>
 </body>
-
 </html>
