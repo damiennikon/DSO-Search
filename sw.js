@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dso-tracker-v4'; 
+const CACHE_NAME = 'dso-tracker-v5'; 
 
 const ASSETS_TO_CACHE = [
   './',
@@ -13,7 +13,7 @@ const ASSETS_TO_CACHE = [
   './icon-512.png'
 ];
 
-// Install Event - Caches the files and forces immediate takeover
+// Install Event - Caches the files
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -24,7 +24,7 @@ self.addEventListener('install', event => {
   self.skipWaiting(); 
 });
 
-// Activate Event - Wipes out the old Zombie Cache
+// Activate Event - Wipes out old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -49,4 +49,11 @@ self.addEventListener('fetch', event => {
         return response || fetch(event.request);
       })
   );
+});
+
+// --- NEW: Listen for the "Skip Waiting" command from the update button ---
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
