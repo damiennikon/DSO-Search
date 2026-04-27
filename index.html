@@ -48,6 +48,15 @@
             <button class="cat-btn" data-cat="Cluster">Clusters</button>
         </div>
 
+        <button id="polarAlignBtn" class="polar-align-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            Polar Align
+        </button>
+
         <div class="section-divider">
             <div class="line"></div>
             <span>southern catalog</span>
@@ -65,15 +74,12 @@
             <div id="modalIcon"></div>
             <h2 id="modalTitle">Name</h2>
             <div class="modal-badge" id="modalId">ID</div>
-
             <div class="modal-stats">
                 <div class="stat-box"><span>Type</span><br><b id="modalType">--</b></div>
                 <div class="stat-box"><span>Distance</span><br><b id="modalDist">--</b></div>
                 <div class="stat-box"><span>Best Season</span><br><b id="modalSeason">--</b></div>
             </div>
-
             <p id="modalDesc">--</p>
-
             <div id="modalStatusArea">
                 <div id="modalAlt">Altitude: Calculating...</div>
                 <button id="locateBtn">Locate in Sky</button>
@@ -81,9 +87,19 @@
         </div>
     </div>
 
+    <div id="polarModal" style="display: none;">
+        <div class="modal-content">
+            <button id="closePolarModalBtn">×</button>
+            <h2 style="font-family: 'Orbitron', sans-serif; color: var(--primary-red); font-size: 1.5rem; margin-bottom: 20px;">Select Pole</h2>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="btnNCP" class="cat-btn" style="flex: 1;">NCP (North)</button>
+                <button id="btnSCP" class="cat-btn" style="flex: 1;">SCP (South)</button>
+            </div>
+        </div>
+    </div>
+
     <div id="cameraUI" style="display: none;">
         <video id="cameraFeed" autoplay playsinline></video>
-        
         <div id="targetHUD">
             <button id="backButton">‹ Cancel</button>
             <div id="targetLabel">Hunting: <span id="activeTargetName"></span></div>
@@ -93,7 +109,6 @@
                 </svg>
             </button>
         </div>
-        
         <div id="yellowDot"></div>
         <div id="directionArrow">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -101,7 +116,6 @@
                 <polyline points="5 12 12 5 19 12"></polyline>
             </svg>
         </div>
-
         <div id="miniCompass">
             <div id="compassNeedle"></div>
             <div class="compass-label compass-n">N</div>
@@ -109,7 +123,6 @@
             <div class="compass-label compass-s">S</div>
             <div class="compass-label compass-w">W</div>
         </div>
-
         <div id="calOverlay">
             <div class="cal-box">
                 <h3>Compass Drift?</h3>
@@ -127,7 +140,6 @@
     </div>
 
     <script src="./app.js"></script>
-    
     <script>
         let newWorker;
         const updateToast = document.getElementById('updateToast');
