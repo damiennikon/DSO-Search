@@ -1,5 +1,8 @@
-// --- 1. THE SOUTHERN DSO DATABASE (30 ITEMS) ---
+// --- 1. THE SOUTHERN DSO DATABASE (33 ITEMS) ---
 const dsoDatabase = [
+    { id: "SCP", name: "South Celestial Pole", ra: 0, dec: -90, type: "Alignment", dist: "N/A", season: "All Year", desc: "The exact True South rotational axis of the Earth." },
+    { id: "NCP", name: "North Celestial Pole", ra: 0, dec: 90, type: "Alignment", dist: "N/A", season: "All Year", desc: "The exact True North rotational axis of the Earth. Useful for reverse-boresight alignment in the Southern Hemisphere." },
+    { id: "Rho Oph", name: "Rho Ophiuchi Cloud", ra: 246.7, dec: -24.5, type: "Nebula", dist: "460 ly", season: "Winter", desc: "A massive and incredibly colorful complex of dark, emission, and reflection nebulae. A spectacular wide-field target." },
     { id: "NGC 3372", name: "Carina Nebula", ra: 161.25, dec: -59.86, type: "Nebula", dist: "8,500 ly", season: "Autumn", desc: "One of the largest diffuse nebulae in our skies. It is four times as large and even brighter than the famous Orion Nebula." },
     { id: "NGC 5139", name: "Omega Centauri", ra: 201.7, dec: -47.48, type: "Globular Cluster", dist: "15,800 ly", season: "Autumn/Winter", desc: "The largest and brightest globular cluster in the Milky Way, containing approximately 10 million stars." },
     { id: "M 42", name: "Orion Nebula", ra: 83.822, dec: -5.391, type: "Nebula", dist: "1,344 ly", season: "Summer", desc: "The brightest and most famous star-forming region in the sky, located in the sword of Orion." },
@@ -36,11 +39,12 @@ const icons = {
     "Galaxy": `<img src="./Galaxy.png" alt="Galaxy" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
     "Nebula": `<img src="./Nebula.png" alt="Nebula" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
     "Globular Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
-    "Open Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`
+    "Open Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
+    "Alignment": `<svg viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:100%; height:100%; filter: drop-shadow(0 0 3px #ff0000);"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`
 };
 
 let isListExpanded = false; 
-let activeCategory = 'All'; // NEW: Track the current category
+let activeCategory = 'All';
 
 // --- 2. DYNAMIC DOM RENDERER ---
 function renderDSOList() {
@@ -88,7 +92,7 @@ if(clearBtn) {
     });
 }
 
-// NEW: Category Filter Logic
+// Category Filter Logic
 const categoryButtons = document.querySelectorAll('.cat-btn');
 if(categoryButtons) {
     categoryButtons.forEach(btn => {
@@ -96,7 +100,7 @@ if(categoryButtons) {
             categoryButtons.forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
             activeCategory = e.target.getAttribute('data-cat');
-            isListExpanded = false; // Reset to top 4 when changing tabs
+            isListExpanded = false;
             updateDSOVisibility();
         });
     });
@@ -171,7 +175,6 @@ function updateDSOVisibility() {
 
     const currentSearch = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
-    // --- DAYTIME LOCKDOWN ---
     if (!isNight && currentSearch === '') {
         dsoDatabase.forEach(dso => {
             const targetElement = document.getElementById(`list-target-${dso.id.replace(/\s+/g, '')}`);
@@ -189,7 +192,6 @@ function updateDSOVisibility() {
         return; 
     }
     
-    // --- EVALUATE EVERY ITEM ---
     let visibleIndex = 0;
     let totalAvailable = 0;
 
@@ -200,21 +202,26 @@ function updateDSOVisibility() {
         
         const statusText = button.querySelector('.dso-status');
         
-        if (position.altitude < 0) {
+        // NEW: Bypass the "Below Horizon" block specifically for Alignment targets
+        if (position.altitude < 0 && dso.type !== 'Alignment') {
             button.classList.add('dimmed');
             statusText.innerText = "BELOW HORIZON";
             statusText.className = "dso-status status-down";
-        } else if (!isNight) {
+        } else if (!isNight && dso.type !== 'Alignment') { 
             button.classList.add('dimmed');
             statusText.innerText = "DAYLIGHT";
             statusText.className = "dso-status status-warn";
         } else {
             button.classList.remove('dimmed');
-            statusText.innerText = "VISIBLE";
-            statusText.className = "dso-status status-up";
+            if (position.altitude < 0 && dso.type === 'Alignment') {
+                statusText.innerText = "REVERSE ALIGN";
+                statusText.className = "dso-status status-warn";
+            } else {
+                statusText.innerText = "VISIBLE";
+                statusText.className = "dso-status status-up";
+            }
         }
         
-        // NEW: Check category match (Cluster matches both Open and Globular)
         let categoryMatch = false;
         if (activeCategory === 'All') {
             categoryMatch = true;
@@ -232,9 +239,8 @@ function updateDSOVisibility() {
             totalAvailable++;
             
             if (currentSearch !== '') {
-                button.style.display = 'flex'; // Show all search results 
+                button.style.display = 'flex'; 
             } else {
-                // Apply "Show More" limit for both "All" and individual categories
                 if (isListExpanded || visibleIndex < 4) {
                     button.style.display = 'flex';
                 } else {
@@ -247,7 +253,6 @@ function updateDSOVisibility() {
         }
     });
 
-    // --- BUTTON TOGGLE LOGIC ---
     if (showMoreBtn) {
         if (currentSearch === '' && totalAvailable > 4) {
             showMoreBtn.style.display = 'block';
@@ -263,22 +268,16 @@ renderDSOList();
 if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
         (position) => {
-            // SUCCESS: We got a live satellite lock
             userLat = position.coords.latitude;
             userLon = position.coords.longitude;
             updateDSOVisibility();
         },
         (error) => {
-            // FAILED: GPS timed out or was denied (likely indoors)
             console.error("GPS Error:", error.message);
-            
-            // FALLBACK: South-East Queensland (keeps the math working indoors)
             userLat = -27.58; 
             userLon = 153.03; 
-            
             updateDSOVisibility(); 
             
-            // Add a tiny note to the daytime screen letting you know it's using the fallback
             setTimeout(() => {
                 const existingMsg = document.getElementById('status-msg');
                 if (existingMsg) {
@@ -318,16 +317,21 @@ function openInfoModal(dso) {
         const sunPos = calculateAltAz(sunCoords.ra, sunCoords.dec, userLat, userLon, rightNow);
         const isNight = sunPos.altitude <= -18;
 
-        if (position.altitude < 0) {
+        // NEW: Allow the locate button for Alignment targets even when below 0 degrees
+        if (position.altitude < 0 && dso.type !== 'Alignment') {
             altDisplay.innerHTML = `Altitude: <span style="color:#ff0000">${position.altitude}°</span> (Underground)`;
             locateBtn.disabled = true;
             locateBtn.innerText = "Below Horizon";
-        } else if (!isNight) {
+        } else if (!isNight && dso.type !== 'Alignment') {
             altDisplay.innerHTML = `Altitude: <span style="color:#ffaa00">${position.altitude}°</span> (Sun is up)`;
             locateBtn.disabled = true;
             locateBtn.innerText = "Waiting for Nightfall";
         } else {
-            altDisplay.innerHTML = `Altitude: <span style="color:#00ff00">${position.altitude}°</span>`;
+            if (position.altitude < 0 && dso.type === 'Alignment') {
+                altDisplay.innerHTML = `Altitude: <span style="color:#ffaa00">${position.altitude}°</span> (Pointing Down)`;
+            } else {
+                altDisplay.innerHTML = `Altitude: <span style="color:#00ff00">${position.altitude}°</span>`;
+            }
             locateBtn.disabled = false;
             locateBtn.innerText = "Locate in Sky";
         }
@@ -355,13 +359,9 @@ let activeStream = null;
 function handleAR(event) {
     if (!activeDSO || !userLat || !userLon) return;
 
-    // --- MAGNETIC DECLINATION OFFSET ---
-    // Offset is ~11 degrees East (+11) for SE Queensland. 
     const declinationOffset = 11; 
 
     let rawAz = event.webkitCompassHeading || (360 - event.alpha);
-    
-    // Convert Magnetic North to True North
     let phoneAz = (rawAz + declinationOffset) % 360;
     if (phoneAz < 0) phoneAz += 360; 
 
