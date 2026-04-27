@@ -410,12 +410,21 @@ function handleAR(event) {
     const dot = document.getElementById('yellowDot');
     const arrow = document.getElementById('directionArrow');
 
-    if (distanceToTarget < 5) {
+    // --- NEW 3-TIER RADAR LOGIC ---
+    if (distanceToTarget < 0.8) {
+        // BULLSEYE (< 0.8 degrees) - Bright Blue & Larger
+        arrow.style.display = 'none'; 
+        dot.style.backgroundColor = '#00d4ff';
+        dot.style.boxShadow = '0 0 15px #00d4ff, 0 0 30px #00d4ff';
+        dot.style.transform = 'translate(-50%, -50%) scale(2)';
+    } else if (distanceToTarget < 5) {
+        // GETTING WARM (< 5 degrees) - Green
         arrow.style.display = 'none'; 
         dot.style.backgroundColor = '#00ff00';
         dot.style.boxShadow = '0 0 15px #00ff00, 0 0 30px #00ff00';
         dot.style.transform = 'translate(-50%, -50%) scale(1.5)';
     } else {
+        // FAR AWAY (> 5 degrees) - Yellow + Arrow
         arrow.style.display = 'block'; 
         dot.style.backgroundColor = '#ffff00';
         dot.style.boxShadow = '0 0 10px #ffff00, 0 0 20px #ffff00';
