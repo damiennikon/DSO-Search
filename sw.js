@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dso-tracker-v5'; 
+const CACHE_NAME = 'dso-tracker-v6'; // Bumped to v6 to trigger the update!
 
 const ASSETS_TO_CACHE = [
   './',
@@ -51,7 +51,7 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// --- NEW: Listen for the "Skip Waiting" command from the update button ---
+// Listen for the "Skip Waiting" command from the update button
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') {
     self.skipWaiting();
