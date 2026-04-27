@@ -52,6 +52,8 @@ function renderDSOList() {
     listContainer.innerHTML = ''; 
 
     dsoDatabase.forEach(dso => {
+        if (dso.type === 'Alignment') return; // Skip rendering Alignment targets in the main list
+        
         const button = document.createElement('button');
         button.className = 'dso-item dimmed'; 
         button.id = `list-target-${dso.id.replace(/\s+/g, '')}`;
@@ -97,12 +99,41 @@ const categoryButtons = document.querySelectorAll('.cat-btn');
 if(categoryButtons) {
     categoryButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
-            categoryButtons.forEach(b => b.classList.remove('active'));
+            if (e.target.id === 'btnNCP' || e.target.id === 'btnSCP') return; // Ignore modal buttons
+            categoryButtons.forEach(b => {
+                if (b.id !== 'btnNCP' && b.id !== 'btnSCP') b.classList.remove('active');
+            });
             e.target.classList.add('active');
             activeCategory = e.target.getAttribute('data-cat');
             isListExpanded = false;
             updateDSOVisibility();
         });
+    });
+}
+
+// Polar Align Modal Logic
+const polarAlignBtn = document.getElementById('polarAlignBtn');
+const polarModal = document.getElementById('polarModal');
+const closePolarModalBtn = document.getElementById('closePolarModalBtn');
+const btnNCP = document.getElementById('btnNCP');
+const btnSCP = document.getElementById('btnSCP');
+
+if(polarAlignBtn) polarAlignBtn.addEventListener('click', () => polarModal.style.display = 'flex');
+if(closePolarModalBtn) closePolarModalBtn.addEventListener('click', () => polarModal.style.display = 'none');
+
+if(btnNCP) {
+    btnNCP.addEventListener('click', () => {
+        polarModal.style.display = 'none';
+        const target = dsoDatabase.find(d => d.id === 'NCP');
+        if(target) openInfoModal(target);
+    });
+}
+
+if(btnSCP) {
+    btnSCP.addEventListener('click', () => {
+        polarModal.style.display = 'none';
+        const target = dsoDatabase.find(d => d.id === 'SCP');
+        if(target) openInfoModal(target);
     });
 }
 
@@ -198,11 +229,10 @@ function updateDSOVisibility() {
     dsoDatabase.forEach(dso => {
         const position = calculateAltAz(dso.ra, dso.dec, userLat, userLon, rightNow);
         const button = document.getElementById(`list-target-${dso.id.replace(/\s+/g, '')}`);
-        if (!button) return;
+        if (!button) return; // Safely skip Alignment targets since they aren't in the list
         
         const statusText = button.querySelector('.dso-status');
         
-        // NEW: Bypass the "Below Horizon" block specifically for Alignment targets
         if (position.altitude < 0 && dso.type !== 'Alignment') {
             button.classList.add('dimmed');
             statusText.innerText = "BELOW HORIZON";
@@ -317,7 +347,6 @@ function openInfoModal(dso) {
         const sunPos = calculateAltAz(sunCoords.ra, sunCoords.dec, userLat, userLon, rightNow);
         const isNight = sunPos.altitude <= -18;
 
-        // NEW: Allow the locate button for Alignment targets even when below 0 degrees
         if (position.altitude < 0 && dso.type !== 'Alignment') {
             altDisplay.innerHTML = `Altitude: <span style="color:#ff0000">${position.altitude}°</span> (Underground)`;
             locateBtn.disabled = true;
