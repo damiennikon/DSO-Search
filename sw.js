@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dso-tracker-v9'; 
+const CACHE_NAME = 'dso-tracker-v10'; 
 
 const ASSETS_TO_CACHE = [
   './',
@@ -13,7 +13,6 @@ const ASSETS_TO_CACHE = [
   './icon-512.png'
 ];
 
-// Install Event - Caches the files but WAITS for the user
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -21,10 +20,8 @@ self.addEventListener('install', event => {
         return cache.addAll(ASSETS_TO_CACHE);
       })
   );
-  // self.skipWaiting() REMOVED FROM HERE!
 });
 
-// Activate Event - Wipes out old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -41,7 +38,6 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch Event - Serves the files from cache if offline
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
@@ -51,7 +47,6 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Listen for the "Skip Waiting" command ONLY from the update button
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') {
     self.skipWaiting();
