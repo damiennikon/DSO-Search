@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dso-tracker-v13'; 
+const CACHE_NAME = 'dso-tracker-v14'; 
 
 const ASSETS_TO_CACHE = [
   './',
