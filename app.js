@@ -436,7 +436,10 @@ function handleAR(event) {
 
         const angleRad = Math.atan2(deltaAz, deltaAlt);
         const angleDeg = angleRad * R2D;
-        arrow.style.transform = `rotate(${angleDeg}deg) translateY(-50px)`;
+        
+        // Center it perfectly, fix the rotation axis, and orbit at a uniform 70px radius
+        arrow.style.transformOrigin = 'center center'; 
+        arrow.style.transform = `translate(-50%, -50%) rotate(${angleDeg}deg) translateY(-70px)`;
     }
 }
 
