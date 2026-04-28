@@ -1,14 +1,7 @@
-// --- 1. THE SOUTHERN DSO DATABASE (MASTER MERGE) ---
-const alignmentTargets = [
+// --- 1. THE SOUTHERN DSO MASTER DATABASE (295 ITEMS) ---
+const dsoDatabase = [
     { id: "SCP", name: "South Celestial Pole", ra: 0, dec: -90, type: "Alignment", dist: "N/A", season: "All Year", desc: "The exact True South rotational axis of the Earth." },
-    { id: "NCP", name: "North Celestial Pole", ra: 0, dec: 90, type: "Alignment", dist: "N/A", season: "All Year", desc: "The exact True North rotational axis of the Earth. Useful for reverse-boresight alignment in the Southern Hemisphere." }
-];
-
-// ========================================================
-// ⬇️ PASTE BATCH 1 (GALAXIES) BELOW THIS LINE ⬇️
-// ========================================================
-// --- BATCH 1: 100 GALAXIES ---
-const galaxyBatch = [
+    { id: "NCP", name: "North Celestial Pole", ra: 0, dec: 90, type: "Alignment", dist: "N/A", season: "All Year", desc: "The exact True North rotational axis of the Earth. Useful for reverse-boresight alignment in the Southern Hemisphere." },
     { id: "NGC 55", name: "Sculptor Group Galaxy", ra: 3.75, dec: -39.19, type: "Galaxy", dist: "6.5 Million ly", season: "Spring", desc: "A prominent edge-on barred spiral galaxy in the Sculptor group." },
     { id: "NGC 247", name: "Sculptor Galaxy", ra: 11.78, dec: -20.76, type: "Galaxy", dist: "11.1 Million ly", season: "Spring", desc: "An intermediate spiral galaxy, highly inclined to our line of sight." },
     { id: "NGC 300", name: "Sculptor Galaxy", ra: 13.72, dec: -37.68, type: "Galaxy", dist: "6.1 Million ly", season: "Spring", desc: "A classic face-on spiral galaxy, one of the closest to the Local Group." },
@@ -108,15 +101,7 @@ const galaxyBatch = [
     { id: "PGC 61492", name: "Galaxy", ra: 270.20, dec: -35.50, type: "Galaxy", dist: "Unknown", season: "Spring", desc: "A faint PGC galaxy." },
     { id: "PGC 65128", name: "Galaxy", ra: 305.80, dec: -50.20, type: "Galaxy", dist: "Unknown", season: "Spring", desc: "A background target." },
     { id: "PGC 68741", name: "Galaxy", ra: 335.40, dec: -60.80, type: "Galaxy", dist: "Unknown", season: "Spring", desc: "A minor deep sky target." },
-    { id: "PGC 72390", name: "Galaxy", ra: 355.90, dec: -45.60, type: "Galaxy", dist: "Unknown", season: "Spring", desc: "The final galaxy entry from the PGC catalog in this batch." }
-];
-
-
-// ========================================================
-// ⬇️ PASTE BATCH 2 (NEBULAE) BELOW THIS LINE ⬇️
-// ========================================================
-// --- BATCH 2: 95 NEBULAE ---
-const nebulaBatch = [
+    { id: "PGC 72390", name: "Galaxy", ra: 355.90, dec: -45.60, type: "Galaxy", dist: "Unknown", season: "Spring", desc: "The final galaxy entry from the PGC catalog in this batch." },
     { id: "NGC 2467", name: "Skull and Crossbones Nebula", ra: 118.17, dec: -26.39, type: "Nebula", dist: "13,000 ly", season: "Summer", desc: "A highly active stellar nursery with a striking resemblance to a skull." },
     { id: "NGC 2626", name: "Reflection Nebula", ra: 128.85, dec: -40.67, type: "Nebula", dist: "3,300 ly", season: "Summer", desc: "A beautiful reflection nebula illuminated by a young, hot star." },
     { id: "NGC 2736", name: "Pencil Nebula", ra: 135.00, dec: -45.94, type: "Nebula", dist: "815 ly", season: "Autumn", desc: "A linear remnant of the Vela Supernova, glowing with shocked gas." },
@@ -210,14 +195,7 @@ const nebulaBatch = [
     { id: "Barnard 347", name: "Dark Nebula", ra: 311.20, dec: -47.50, type: "Nebula", dist: "1,900 ly", season: "Spring", desc: "A dense patch of the southern Milky Way." },
     { id: "Barnard 348", name: "Dark Nebula", ra: 315.50, dec: 42.50, type: "Nebula", dist: "1,200 ly", season: "Spring", desc: "A dark region in the northern cross." },
     { id: "Barnard 349", name: "Dark Nebula", ra: 317.10, dec: -48.20, type: "Nebula", dist: "2,000 ly", season: "Spring", desc: "A deep southern dark nebula." },
-    { id: "Barnard 350", name: "Dark Nebula", ra: 319.50, dec: -49.50, type: "Nebula", dist: "2,100 ly", season: "Spring", desc: "A prominent dark cloud in the southern hemisphere." }
-
-
-// ========================================================
-// ⬇️ PASTE BATCH 3 (CLUSTERS) BELOW THIS LINE ⬇️
-// ========================================================
-// --- BATCH 3: 98 CLUSTERS ---
-const clusterBatch = [
+    { id: "Barnard 350", name: "Dark Nebula", ra: 319.50, dec: -49.50, type: "Nebula", dist: "2,100 ly", season: "Spring", desc: "A prominent dark cloud in the southern hemisphere." },
     { id: "NGC 2516", name: "Southern Beehive", ra: 119.54, dec: -60.75, type: "Open Cluster", dist: "1,300 ly", season: "Summer", desc: "A spectacular, bright open cluster easily visible to the naked eye under dark skies." },
     { id: "NGC 2547", name: "Open Cluster", ra: 122.56, dec: -49.25, type: "Open Cluster", dist: "1,500 ly", season: "Summer", desc: "A young open cluster containing many hot, blue stars." },
     { id: "NGC 3114", name: "Open Cluster", ra: 150.68, dec: -60.13, type: "Open Cluster", dist: "3,000 ly", season: "Autumn", desc: "A sprawling, sparse open cluster that looks great in a wide-field view." },
@@ -316,10 +294,9 @@ const clusterBatch = [
     { id: "Collinder 323", name: "Open Cluster", ra: 285.10, dec: -71.50, type: "Open Cluster", dist: "5,000 ly", season: "Spring", desc: "A faint grouping of stars." },
     { id: "Collinder 328", name: "Open Cluster", ra: 295.50, dec: -72.10, type: "Open Cluster", dist: "5,200 ly", season: "Spring", desc: "A southern cluster." },
     { id: "Collinder 335", name: "Open Cluster", ra: 305.10, dec: -73.50, type: "Open Cluster", dist: "5,500 ly", season: "Spring", desc: "The final Collinder cluster in this batch." }
+];
 
-
-// --- MAGIC MERGE: This line stitches your pasted batches together! ---
-const dsoDatabase = [...alignmentTargets, ...galaxyBatch, ...nebulaBatch, ...clusterBatch];
+// --- 2. ICONS & VARIABLES ---
 
 
 // --- 2. ICONS & VARIABLES ---
