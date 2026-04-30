@@ -297,9 +297,6 @@ const dsoDatabase = [
 ];
 
 // --- 2. ICONS & VARIABLES ---
-
-
-// --- 2. ICONS & VARIABLES ---
 const icons = {
     "Galaxy": `<img src="./Galaxy.png" alt="Galaxy" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
     "Nebula": `<img src="./Nebula.png" alt="Nebula" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
@@ -338,9 +335,10 @@ function renderDSOList() {
     });
 }
 
-// Search & Clear Button Logic
+// --- Search, Clear, and Moon Filter Logic ---
 const searchInput = document.getElementById('dsoSearchInput');
 const clearBtn = document.getElementById('clearSearchBtn');
+const moonToggle = document.getElementById('moonFilterToggle'); 
 
 if(searchInput) {
     searchInput.addEventListener('input', function() {
@@ -359,12 +357,19 @@ if(clearBtn) {
     });
 }
 
+if(moonToggle) {
+    moonToggle.addEventListener('change', function() {
+        isListExpanded = false; 
+        updateDSOVisibility();
+    });
+}
+
 // Category Filter Logic
 const categoryButtons = document.querySelectorAll('.cat-btn');
 if(categoryButtons) {
     categoryButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
-            if (e.target.id === 'btnNCP' || e.target.id === 'btnSCP') return; // Ignore modal buttons
+            if (e.target.id === 'btnNCP' || e.target.id === 'btnSCP') return; 
             categoryButtons.forEach(b => {
                 if (b.id !== 'btnNCP' && b.id !== 'btnSCP') b.classList.remove('active');
             });
@@ -455,6 +460,9 @@ function getSunPosition(date) {
 let userLat = null;
 let userLon = null;
 
+// The "Brute Force" Nebulae that survive a full moon
+const moonSafeNebulae = ["NGC 3372", "M 8", "M 42", "NGC 2070"];
+
 function updateDSOVisibility() {
     if (!userLat || !userLon) return;
     const rightNow = new Date();
@@ -470,6 +478,7 @@ function updateDSOVisibility() {
     if (existingMsg) existingMsg.remove();
 
     const currentSearch = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const isMoonModeActive = moonToggle ? moonToggle.checked : false;
 
     if (!isNight && currentSearch === '') {
         dsoDatabase.forEach(dso => {
@@ -494,7 +503,7 @@ function updateDSOVisibility() {
     dsoDatabase.forEach(dso => {
         const position = calculateAltAz(dso.ra, dso.dec, userLat, userLon, rightNow);
         const button = document.getElementById(`list-target-${dso.id.replace(/\s+/g, '')}`);
-        if (!button) return; // Safely skip Alignment targets since they aren't in the list
+        if (!button) return; 
         
         const statusText = button.querySelector('.dso-status');
         
@@ -517,6 +526,7 @@ function updateDSOVisibility() {
             }
         }
         
+        // Category Filter
         let categoryMatch = false;
         if (activeCategory === 'All') {
             categoryMatch = true;
@@ -526,9 +536,20 @@ function updateDSOVisibility() {
             categoryMatch = dso.type.includes(activeCategory);
         }
 
+        // Search Filter
         const isSearchMatch = currentSearch === '' || dso.id.toLowerCase().includes(currentSearch) || dso.name.toLowerCase().includes(currentSearch);
         
-        const isMatch = categoryMatch && isSearchMatch;
+        // NEW Moon Filter
+        let moonSafeMatch = true;
+        if (isMoonModeActive) {
+            if (dso.type === 'Galaxy') {
+                moonSafeMatch = false; 
+            } else if (dso.type === 'Nebula' && !moonSafeNebulae.includes(dso.id)) {
+                moonSafeMatch = false; 
+            }
+        }
+
+        const isMatch = categoryMatch && isSearchMatch && moonSafeMatch;
         
         if (isMatch) {
             totalAvailable++;
