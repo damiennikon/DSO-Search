@@ -42,8 +42,6 @@ const originalBatch = [
 ];
 
 const galaxyBatch = [
-    // --- BATCH 1: 100 GALAXIES ---
-const galaxyBatch = [
     { id: "NGC 55", name: "Sculptor Group Galaxy", ra: 3.75, dec: -39.19, type: "Galaxy", dist: "6.5 Million ly", season: "Spring", desc: "A prominent edge-on barred spiral galaxy in the Sculptor group." },
     { id: "NGC 247", name: "Sculptor Galaxy", ra: 11.78, dec: -20.76, type: "Galaxy", dist: "11.1 Million ly", season: "Spring", desc: "An intermediate spiral galaxy, highly inclined to our line of sight." },
     { id: "NGC 300", name: "Sculptor Galaxy", ra: 13.72, dec: -37.68, type: "Galaxy", dist: "6.1 Million ly", season: "Spring", desc: "A classic face-on spiral galaxy, one of the closest to the Local Group." },
@@ -147,8 +145,6 @@ const galaxyBatch = [
 ];
 
 const nebulaBatch = [
-    // --- BATCH 2: 95 NEBULAE ---
-const nebulaBatch = [
     { id: "NGC 2467", name: "Skull and Crossbones Nebula", ra: 118.17, dec: -26.39, type: "Nebula", dist: "13,000 ly", season: "Summer", desc: "A highly active stellar nursery with a striking resemblance to a skull." },
     { id: "NGC 2626", name: "Reflection Nebula", ra: 128.85, dec: -40.67, type: "Nebula", dist: "3,300 ly", season: "Summer", desc: "A beautiful reflection nebula illuminated by a young, hot star." },
     { id: "NGC 2736", name: "Pencil Nebula", ra: 135.00, dec: -45.94, type: "Nebula", dist: "815 ly", season: "Autumn", desc: "A linear remnant of the Vela Supernova, glowing with shocked gas." },
@@ -245,8 +241,6 @@ const nebulaBatch = [
     { id: "Barnard 350", name: "Dark Nebula", ra: 319.50, dec: -49.50, type: "Nebula", dist: "2,100 ly", season: "Spring", desc: "A prominent dark cloud in the southern hemisphere." }
 ];
 
-const clusterBatch = [
-    // --- BATCH 3: 98 CLUSTERS ---
 const clusterBatch = [
     { id: "NGC 2516", name: "Southern Beehive", ra: 119.54, dec: -60.75, type: "Open Cluster", dist: "1,300 ly", season: "Summer", desc: "A spectacular, bright open cluster easily visible to the naked eye under dark skies." },
     { id: "NGC 2547", name: "Open Cluster", ra: 122.56, dec: -49.25, type: "Open Cluster", dist: "1,500 ly", season: "Summer", desc: "A young open cluster containing many hot, blue stars." },
