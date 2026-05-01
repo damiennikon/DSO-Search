@@ -1,68 +1,5 @@
 // ========================================================
-// --- 1. THE SOUTHERN DSO DATABASE (LOADING BAY) ---
-// ========================================================
-
-const alignmentTargets = [
-    { id: "SCP", name: "South Celestial Pole", ra: 0, dec: -90, type: "Alignment", dist: "N/A", season: "All Year", desc: "The exact True South rotational axis of the Earth." },
-    { id: "NCP", name: "North Celestial Pole", ra: 0, dec: 90, type: "Alignment", dist: "N/A", season: "All Year", desc: "The exact True North rotational axis of the Earth." }
-];
-
-// --- 1. YOUR ORIGINAL 31 TARGETS (Pre-filled for you) ---
-const originalBatch = [
-    { id: "Rho Oph", name: "Rho Ophiuchi Cloud", ra: 246.7, dec: -24.5, type: "Nebula", dist: "460 ly", season: "Winter", desc: "A massive and incredibly colorful complex of dark, emission, and reflection nebulae." },
-    { id: "NGC 3372", name: "Carina Nebula", ra: 161.25, dec: -59.86, type: "Nebula", dist: "8,500 ly", season: "Autumn", desc: "One of the largest diffuse nebulae in our skies." },
-    { id: "NGC 5139", name: "Omega Centauri", ra: 201.7, dec: -47.48, type: "Globular Cluster", dist: "15,800 ly", season: "Autumn/Winter", desc: "The largest and brightest globular cluster in the Milky Way." },
-    { id: "M 42", name: "Orion Nebula", ra: 83.822, dec: -5.391, type: "Nebula", dist: "1,344 ly", season: "Summer", desc: "The brightest and most famous star-forming region in the sky." },
-    { id: "Acrux", name: "Southern Cross", ra: 186.6, dec: -63.1, type: "Open Cluster", dist: "320 ly", season: "Autumn", desc: "The brightest star in the iconic Crux constellation." },
-    { id: "C 99", name: "Coalsack Nebula", ra: 193.0, dec: -62.4, type: "Nebula", dist: "600 ly", season: "Autumn", desc: "A massive dark nebula right next to the Southern Cross." },
-    { id: "Sh2-276", name: "Barnard's Loop", ra: 86.0, dec: -3.0, type: "Nebula", dist: "1,600 ly", season: "Summer", desc: "A giant emission nebula forming a massive arc." },
-    { id: "NGC 2070", name: "Tarantula Nebula", ra: 84.6, dec: -69.1, type: "Nebula", dist: "160,000 ly", season: "Summer", desc: "The most active starburst region known in the Local Group." },
-    { id: "NGC 104", name: "47 Tucanae", ra: 6.0, dec: -72.08, type: "Globular Cluster", dist: "13,000 ly", season: "Spring", desc: "The second brightest globular cluster in the sky." },
-    { id: "LMC", name: "Large Magellanic Cloud", ra: 80.9, dec: -69.75, type: "Galaxy", dist: "163,000 ly", season: "Summer", desc: "A satellite dwarf galaxy of the Milky Way." },
-    { id: "SMC", name: "Small Magellanic Cloud", ra: 13.2, dec: -72.8, type: "Galaxy", dist: "200,000 ly", season: "Spring", desc: "The smaller sibling to the LMC." },
-    { id: "NGC 5128", name: "Centaurus A", ra: 201.3, dec: -43.0, type: "Galaxy", dist: "13 Million ly", season: "Autumn", desc: "A massive peculiar galaxy with a thick dust lane." },
-    { id: "NGC 4755", name: "Jewel Box Cluster", ra: 193.4, dec: -60.3, type: "Open Cluster", dist: "6,440 ly", season: "Autumn", desc: "A stunning open cluster near the Southern Cross." },
-    { id: "M 31", name: "Andromeda Galaxy", ra: 10.684, dec: 41.269, type: "Galaxy", dist: "2.5 Million ly", season: "Spring", desc: "The closest major galaxy to the Milky Way." },
-    { id: "M 8", name: "Lagoon Nebula", ra: 270.9, dec: -24.3, type: "Nebula", dist: "4,100 ly", season: "Winter", desc: "A giant interstellar cloud in Sagittarius." },
-    { id: "M 20", name: "Trifid Nebula", ra: 270.6, dec: -23.0, type: "Nebula", dist: "5,200 ly", season: "Winter", desc: "A rare combination of emission, reflection, and dark nebula." },
-    { id: "M 104", name: "Sombrero Galaxy", ra: 189.9, dec: -11.6, type: "Galaxy", dist: "31.1 Million ly", season: "Autumn", desc: "A spiral galaxy with a brilliant core and thick dust lane." },
-    { id: "M 83", name: "Southern Pinwheel", ra: 204.3, dec: -29.8, type: "Galaxy", dist: "15 Million ly", season: "Autumn", desc: "A close and bright barred spiral galaxy." },
-    { id: "NGC 253", name: "Sculptor Galaxy", ra: 11.9, dec: -25.28, type: "Galaxy", dist: "11.4 Million ly", season: "Spring", desc: "A spectacular starburst galaxy." },
-    { id: "NGC 7293", name: "Helix Nebula", ra: 337.4, dec: -20.8, type: "Nebula", dist: "650 ly", season: "Spring", desc: "One of the closest planetary nebulae, the 'Eye of God'." },
-    { id: "M 16", name: "Eagle Nebula", ra: 274.7, dec: -13.8, type: "Nebula", dist: "7,000 ly", season: "Winter", desc: "Famous for the 'Pillars of Creation'." },
-    { id: "M 17", name: "Omega Nebula", ra: 275.2, dec: -16.2, type: "Nebula", dist: "5,500 ly", season: "Winter", desc: "Also known as the Swan Nebula." },
-    { id: "IC 2602", name: "Southern Pleiades", ra: 160.7, dec: -64.4, type: "Open Cluster", dist: "479 ly", season: "Autumn", desc: "A large, bright open cluster in Carina." },
-    { id: "M 93", name: "Messier 93", ra: 116.1, dec: -23.85, type: "Open Cluster", dist: "3,600 ly", season: "Winter", desc: "A dense, bright open cluster in Puppis." },
-    { id: "M 41", name: "Little Beehive Cluster", ra: 101.5, dec: -20.7, type: "Open Cluster", dist: "2,300 ly", season: "Summer", desc: "Located just below Sirius in Canis Major." },
-    { id: "NGC 3532", name: "Wishing Well Cluster", ra: 166.4, dec: -58.4, type: "Open Cluster", dist: "1,300 ly", season: "Autumn", desc: "Looks like silver coins scattered at the bottom of a well." },
-    { id: "NGC 3132", name: "Southern Ring Nebula", ra: 151.8, dec: -40.4, type: "Nebula", dist: "2,000 ly", season: "Autumn", desc: "A bright planetary nebula with a Figure-8 shape." },
-    { id: "IC 2944", name: "Running Chicken Nebula", ra: 174.0, dec: -63.0, type: "Nebula", dist: "6,500 ly", season: "Autumn", desc: "An emission nebula with distinct dark Bok globules." },
-    { id: "IC 4628", name: "Prawn Nebula", ra: 254.3, dec: -39.8, type: "Nebula", dist: "6,000 ly", season: "Winter", desc: "A massive, faint emission nebula." },
-    { id: "NGC 2359", name: "Thor's Helmet", ra: 109.6, dec: -13.2, type: "Nebula", dist: "11,960 ly", season: "Summer", desc: "A complex bubble blown by a Wolf-Rayet star." },
-    { id: "NGC 2024", name: "Flame Nebula", ra: 85.4, dec: -1.8, type: "Nebula", dist: "1,350 ly", season: "Summer", desc: "An emission nebula lit by Alnitak." }
-];
-
-// --- 2. BATCH 1: GALAXIES ---
-const galaxyBatch = [
-    // PASTE YOUR 100 GALAXIES HERE (Make sure to paste over this line, keeping the brackets)
-];
-
-// --- 3. BATCH 2: NEBULAE ---
-const nebulaBatch = [
-    // PASTE YOUR 100 NEBULAE HERE
-];
-
-// --- 4. BATCH 3: CLUSTERS ---
-const clusterBatch = [
-    // PASTE YOUR 100 CLUSTERS HERE
-];
-
-// --- MAGIC MERGE ---
-const dsoDatabase = [...alignmentTargets, ...originalBatch, ...galaxyBatch, ...nebulaBatch, ...clusterBatch];
-
-
-// ========================================================
-// --- CORE APP LOGIC (DO NOT EDIT BELOW THIS LINE) ---
+// --- DSO TRACKER: CORE LOGIC ---
 // ========================================================
 
 const icons = {
@@ -80,6 +17,7 @@ function renderDSOList() {
     const listContainer = document.getElementById('dsoList');
     listContainer.innerHTML = ''; 
 
+    // Relies on dsoDatabase being loaded prior from database.js
     dsoDatabase.forEach(dso => {
         if (dso.type === 'Alignment') return;
         
