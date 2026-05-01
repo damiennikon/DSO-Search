@@ -3,325 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DSO Search</title>
-    <link rel="stylesheet" href="./styles.css">
-    <link rel="icon" href="data:,">
+    <title>DSO Tracker</title>
     <link rel="manifest" href="./manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-</head>
-<body>
-    <header class="app-header">
-        <svg class="header-graphic" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="100" cy="100" r="40" fill="none" stroke="#ff0000" stroke-width="1" opacity="0.8"/>
-            <circle cx="100" cy="100" r="60" fill="none" stroke="#ff0000" stroke-width="1" opacity="0.5"/>
-            <circle cx="100" cy="100" r="80" fill="none" stroke="#ff0000" stroke-width="0.5" opacity="0.3"/>
-            <circle cx="100" cy="100" r="100" fill="none" stroke="#ff0000" stroke-width="0.2" opacity="0.2"/>
-            <path d="M100 90 L102 98 L110 100 L102 102 L100 110 L98 102 L90 100 L98 98 Z" fill="#ff0000" filter="drop-shadow(0px 0px 4px #ff0000)"/>
-            <circle cx="60" cy="100" r="2" fill="#ff0000"/>
-            <circle cx="140" cy="100" r="2" fill="#ff0000"/>
-            <circle cx="100" cy="60" r="3" fill="#ff0000" filter="drop-shadow(0px 0px 3px #ff0000)"/>
-            <circle cx="120" cy="71" r="2" fill="#ff0000"/>
-            <circle cx="75" cy="68" r="1.5" fill="#ff0000"/>
-        </svg>
-        <h1>DSO Search</h1>
-    </header>
-
-    <main>
-        <div class="search-container">
-            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" placeholder="Search 30+ objects..." id="dsoSearchInput">
-            <button id="clearSearchBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-        </div>
-
-        <div class="category-filters">
-            <button class="cat-btn active" data-cat="All">All Targets</button>
-            <button class="cat-btn" data-cat="Galaxy">Galaxies</button>
-            <button class="cat-btn" data-cat="Nebula">Nebulae</button>
-            <button class="cat-btn" data-cat="Cluster">Clusters</button>
-        </div>
-
-        <div class="section-divider">
-            <div class="line"></div>
-            <span>southern catalog</span>
-            <div class="line"></div>
-        </div>
-
-        <div class="dso-list" id="dsoList"></div>
-        
-        <button id="showMoreBtn" style="display: none;">Show More</button>
-    </main>
-
-    <div id="infoModal" style="display: none;">
-        <div class="modal-content">
-            <button id="closeModalBtn">×</button>
-            <div id="modalIcon"></div>
-            <h2 id="modalTitle">Name</h2>
-            <div class="modal-badge" id="modalId">ID</div>
-
-            <div class="modal-stats">
-                <div class="stat-box"><span>Type</span><br><b id="modalType">--</b></div>
-                <div class="stat-box"><span>Distance</span><br><b id="modalDist">--</b></div>
-                <div class="stat-box"><span>Best Season</span><br><b id="modalSeason">--</b></div>
-            </div>
-
-            <p id="modalDesc">--</p>
-
-            <div id="modalStatusArea">
-                <div id="modalAlt">Altitude: Calculating...</div>
-                <button id="locateBtn">Locate in Sky</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="cameraUI" style="display: none;">
-        <video id="cameraFeed" autoplay playsinline></video>
-        
-        <div id="targetHUD">
-            <button id="backButton">‹ Cancel</button>
-            <div id="targetLabel">Hunting: <span id="activeTargetName"></span></div>
-            <button id="openCalBtn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4Z"/>
-                </svg>
-            </button>
-        </div>
-        
-        <div id="yellowDot"></div>
-        <div id="directionArrow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="19" x2="12" y2="5"></line>
-                <polyline points="5 12 12 5 19 12"></polyline>
-            </svg>
-        </div>
-
-        <div id="miniCompass">
-            <div id="compassNeedle"></div>
-            <div class="compass-label compass-n">N</div>
-            <div class="compass-label compass-e">E</div>
-            <div class="compass-label compass-s">S</div>
-            <div class="compass-label compass-w">W</div>
-        </div>
-
-        <div id="calOverlay">
-            <div class="cal-box">
-                <h3>Compass Drift?</h3>
-                <p>Move your phone in a large Figure-8 motion for 5 seconds to recalibrate the hardware sensors.</p>
-                <svg class="figure8" viewBox="0 0 100 50" fill="none" stroke="#ff0000" stroke-width="4">
-                    <path d="M25,25 C25,10 40,10 50,25 C60,40 75,40 75,25 C75,10 60,10 50,25 C40,40 25,40 25,25 Z"/>
-                </svg>
-                <button id="closeCalBtn">I'm Done</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="updateToast" style="display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--primary-red); color: #000; padding: 15px 25px; border-radius: 30px; font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 0.9rem; z-index: 1000; box-shadow: 0 0 20px #ff0000; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;">
-        Update Available! Tap to reload.
-    </div>
-
-    <script src="./app.js"></script>
-    
-    <script>
-        let newWorker;
-        const updateToast = document.getElementById('updateToast');
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').then(reg => {
-                reg.addEventListener('updatefound', () => {
-                    newWorker = reg.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            updateToast.style.display = 'block';
-                        }
-                    });
-                });
-            });
-
-            updateToast.addEventListener('click', () => {
-                if (newWorker) {
-                    newWorker.postMessage('SKIP_WAITING');
-                }
-            });
-
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) {
-                    window.location.reload();
-                    refreshing = true;
-                }
-            });
-        }
-    </script>
-</body>
-</html>            justify-content: space-between;
-            padding: 15px;
-            gap: 10px;
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-bg: #1e1e1e;
+            --text-main: #ffffff;
+            --text-dim: #aaaaaa;
+            --accent: #ff4444;
         }
 
-        .action-btn {
-            flex: 1;
-            padding: 12px;
-            background-color: var(--panel-bg);
-            border: 1px solid var(--text-dim);
-            color: var(--text-main);
-            border-radius: 8px;
-            font-weight: bold;
-            text-align: center;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; user-select: none; }
+        body { background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; }
+
+        .app-header { background-color: var(--panel-bg); padding: 15px; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
+        
+        .search-container { display: flex; position: relative; margin-bottom: 10px; }
+        #dsoSearchInput { width: 100%; padding: 12px 40px 12px 15px; background-color: #000; border: 1px solid #444; color: #fff; border-radius: 8px; font-size: 16px; }
+        #clearSearchBtn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-dim); font-size: 20px; display: none; padding: 5px;}
+
+        /* Moon Filter Toggle */
+        .moon-toggle-container { margin: 10px 0 15px 5px; color: #ffaa00; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+        .moon-toggle-container input { transform: scale(1.3); }
+
+        .category-filters { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .cat-btn { background-color: #000; color: var(--text-dim); border: 1px solid #444; padding: 8px 16px; border-radius: 20px; white-space: nowrap; }
+        .cat-btn.active { background-color: var(--text-main); color: #000; font-weight: bold; }
+
+        .action-row { display: flex; padding: 15px; }
+        .action-btn { flex: 1; padding: 12px; background-color: var(--panel-bg); border: 1px solid #444; color: var(--text-main); border-radius: 8px; font-weight: bold; text-align: center; }
 
         #dsoList { padding: 0 15px 20px 15px; display: flex; flex-direction: column; gap: 10px; }
-
-        .dso-item {
-            display: flex;
-            align-items: center;
-            background-color: var(--panel-bg);
-            border: 1px solid #330000;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: left;
-            color: var(--text-main);
-        }
-
+        .dso-item { display: flex; align-items: center; background-color: var(--panel-bg); border: 1px solid #333; padding: 15px; border-radius: 10px; text-align: left; color: var(--text-main); }
         .dso-item.dimmed { opacity: 0.4; }
-
+        
         .dso-icon { width: 40px; height: 40px; margin-right: 15px; flex-shrink: 0; }
-        
         .dso-text-group { flex: 1; }
-        
         .dso-id { font-weight: bold; font-size: 1.1rem; }
-        
         .dso-name { font-size: 0.85rem; color: var(--text-dim); margin-top: 2px; }
-        
         .dso-status { font-size: 0.75rem; margin-top: 4px; font-weight: bold; }
+        
         .status-up { color: #00ff00; }
-        .status-down { color: #ff0000; }
+        .status-down { color: #ff4444; }
         .status-warn { color: #ffaa00; }
-
         .dso-arrow { font-size: 1.5rem; color: var(--text-dim); }
 
-        #showMoreBtn {
-            width: calc(100% - 30px);
-            margin: 0 15px 30px 15px;
-            padding: 15px;
-            background-color: #220000;
-            border: 1px solid var(--accent);
-            color: var(--text-main);
-            border-radius: 8px;
-            font-weight: bold;
-            display: none;
-        }
+        #showMoreBtn { width: calc(100% - 30px); margin: 0 15px 30px 15px; padding: 15px; background-color: #2a2a2a; border: none; color: var(--text-main); border-radius: 8px; font-weight: bold; display: none; }
 
         /* Modals */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9);
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 200; padding: 20px;
-        }
-
-        .modal-content {
-            background: var(--panel-bg);
-            border: 2px solid var(--accent);
-            border-radius: 12px;
-            width: 100%; max-width: 400px;
-            padding: 20px; text-align: center;
-        }
-
-        .modal-info-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-            text-align: left; margin: 20px 0; font-size: 0.9rem;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 200; padding: 20px; }
+        .modal-content { background: var(--panel-bg); border-radius: 12px; width: 100%; max-width: 400px; padding: 20px; text-align: center; }
         
-        .modal-desc {
-            text-align: left; font-size: 0.85rem; color: #ccc; margin-bottom: 20px; line-height: 1.4;
-        }
-
-        .modal-btn {
-            width: 100%; padding: 15px; margin-top: 10px;
-            border-radius: 8px; font-weight: bold; border: none;
-        }
-
+        .modal-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin: 20px 0; font-size: 0.9rem; }
+        .modal-desc { text-align: left; font-size: 0.85rem; color: #ccc; margin-bottom: 20px; line-height: 1.4; }
+        
+        .modal-btn { width: 100%; padding: 15px; margin-top: 10px; border-radius: 8px; font-weight: bold; border: none; }
         .btn-primary { background-color: var(--accent); color: #fff; }
         .btn-secondary { background-color: transparent; border: 1px solid var(--text-dim); color: var(--text-main); }
-        .btn-primary:disabled { background-color: #333; color: #666; }
+        .btn-primary:disabled { background-color: #444; color: #888; }
 
-        /* Camera UI */
-        #cameraUI {
-            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: #000; z-index: 300;
-        }
-
-        #cameraFeed {
-            width: 100%; height: 100%; object-fit: cover;
-        }
-
-        /* Night Vision Filter Overlay */
-        #cameraFilter {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(255, 0, 0, 0.35); pointer-events: none;
-            mix-blend-mode: multiply;
-        }
-
-        .hud-top {
-            position: absolute; top: 0; left: 0; width: 100%;
-            padding: 20px; display: flex; justify-content: space-between; align-items: center;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-        }
-
-        #backButton {
-            background: rgba(0,0,0,0.5); border: 1px solid var(--accent); color: var(--accent);
-            padding: 10px 15px; border-radius: 8px; font-weight: bold;
-        }
-
+        /* AR Camera UI */
+        #cameraUI { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000; z-index: 300; }
+        #cameraFeed { width: 100%; height: 100%; object-fit: cover; }
+        
+        .hud-top { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
+        #backButton { background: rgba(0,0,0,0.5); border: 1px solid #fff; color: #fff; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
         #activeTargetName { color: var(--accent); font-weight: bold; font-size: 1.2rem; text-shadow: 0 0 5px #000; }
 
-        .center-crosshair {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 60px; height: 60px; pointer-events: none;
-        }
-        .center-crosshair::before, .center-crosshair::after {
-            content: ''; position: absolute; background-color: rgba(255, 0, 0, 0.5);
-        }
-        .center-crosshair::before { top: 29px; left: 0; width: 60px; height: 2px; }
-        .center-crosshair::after { left: 29px; top: 0; height: 60px; width: 2px; }
+        /* Safe Crosshair */
+        .crosshair-center { position: absolute; top: 50%; left: 50%; width: 2px; height: 40px; background: rgba(255,0,0,0.5); transform: translate(-50%, -50%); pointer-events: none; }
+        .crosshair-center::after { content: ''; position: absolute; top: 50%; left: 50%; width: 40px; height: 2px; background: rgba(255,0,0,0.5); transform: translate(-50%, -50%); }
 
-        /* 3-Tier Radar Elements */
-        #yellowDot {
-            position: absolute; top: 50%; left: 50%;
-            width: 20px; height: 20px; border-radius: 50%;
-            display: none; transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
-        }
+        /* Radar Elements */
+        #yellowDot { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; border-radius: 50%; display: none; transform: translate(-50%, -50%); transition: background-color 0.2s, box-shadow 0.2s; }
+        #directionArrow { position: absolute; top: 50%; left: 50%; font-size: 40px; display: none; margin-top: -20px; margin-left: -20px; line-height: 40px; text-align: center; width: 40px; height: 40px; }
 
-        #directionArrow {
-            position: absolute; top: 50%; left: 50%;
-            font-size: 40px; display: none; text-shadow: 0 0 5px #000;
-        }
-
-        .compass-widget {
-            position: absolute; bottom: 30px; right: 20px;
-            width: 60px; height: 60px; border: 2px solid var(--accent); border-radius: 50%;
-            background: rgba(0,0,0,0.5);
-        }
-
-        #compassNeedle {
-            position: absolute; top: 5%; left: 45%;
-            width: 10%; height: 90%; background: linear-gradient(to bottom, var(--accent) 50%, transparent 50%);
-            transform-origin: center;
-        }
+        .compass-widget { position: absolute; bottom: 30px; right: 20px; width: 60px; height: 60px; border: 2px solid var(--accent); border-radius: 50%; background: rgba(0,0,0,0.5); }
+        #compassNeedle { position: absolute; top: 5%; left: 45%; width: 10%; height: 90%; background: linear-gradient(to bottom, var(--accent) 50%, transparent 50%); transform-origin: center; }
     </style>
 </head>
 <body>
 
     <header class="app-header">
         <div class="search-container">
-            <input type="text" id="dsoSearchInput" placeholder="Search targets (e.g. M 42, Orion)...">
+            <input type="text" id="dsoSearchInput" placeholder="Search targets...">
             <button id="clearSearchBtn">×</button>
         </div>
         
@@ -340,7 +106,6 @@
 
     <div class="action-row">
         <button id="polarAlignBtn" class="action-btn">🔭 Polar Align</button>
-        <button id="openCalBtn" class="action-btn" style="display:none;">📅 Planning</button>
     </div>
 
     <main id="dsoList"></main>
@@ -349,9 +114,8 @@
     <div id="polarModal" class="modal-overlay">
         <div class="modal-content">
             <h2 style="margin-bottom: 20px;">Mount Alignment</h2>
-            <p style="margin-bottom: 20px; color: #ccc; font-size: 0.9rem;">Select the celestial pole you wish to align your tracking mount to.</p>
             <button id="btnSCP" class="modal-btn btn-primary">Locate SCP (South)</button>
-            <button id="btnNCP" class="modal-btn btn-primary" style="margin-top: 15px;">Locate NCP (Reverse/North)</button>
+            <button id="btnNCP" class="modal-btn btn-primary" style="margin-top: 15px;">Locate NCP (North)</button>
             <button id="closePolarModalBtn" class="modal-btn btn-secondary" style="margin-top: 20px;">Cancel</button>
         </div>
     </div>
@@ -361,41 +125,28 @@
             <div id="modalIcon" style="width: 60px; height: 60px; margin: 0 auto;"></div>
             <h2 id="modalTitle" style="margin-top: 10px;"></h2>
             <div id="modalId" style="color: var(--text-dim); font-weight: bold;"></div>
-            
             <div class="modal-info-grid">
                 <div><strong>Type:</strong> <span id="modalType"></span></div>
                 <div><strong>Season:</strong> <span id="modalSeason"></span></div>
                 <div><strong>Distance:</strong> <span id="modalDist"></span></div>
                 <div id="modalAlt" style="grid-column: span 2; text-align: center; font-weight: bold; margin-top: 10px;"></div>
             </div>
-
             <div id="modalDesc" class="modal-desc"></div>
-
             <button id="locateBtn" class="modal-btn btn-primary">Locate in Sky</button>
             <button id="closeModalBtn" class="modal-btn btn-secondary">Close</button>
         </div>
     </div>
 
-    <div id="calOverlay" class="modal-overlay">
-        <div class="modal-content">
-            <h2>Imaging Plan</h2>
-            <p style="margin: 20px 0; color: #888;">Calendar integration coming soon.</p>
-            <button id="closeCalBtn" class="modal-btn btn-secondary">Close</button>
-        </div>
-    </div>
-
     <div id="cameraUI">
         <video id="cameraFeed" autoplay playsinline></video>
-        <div id="cameraFilter"></div> <div class="hud-top">
+        <div class="hud-top">
             <button id="backButton">❮ Back</button>
             <div id="activeTargetName">Target</div>
             <div style="width: 60px;"></div>
         </div>
-
-        <div class="center-crosshair"></div>
+        <div class="crosshair-center"></div>
         <div id="directionArrow">➔</div>
         <div id="yellowDot"></div>
-
         <div class="compass-widget">
             <div id="compassNeedle"></div>
         </div>
@@ -404,9 +155,7 @@
     <script src="./app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js')
-            .then(() => console.log("Service Worker Registered"))
-            .catch(err => console.error("SW Registration Failed", err));
+            navigator.serviceWorker.register('./sw.js');
         }
     </script>
 </body>
