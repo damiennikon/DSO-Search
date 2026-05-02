@@ -3,15 +3,16 @@
 // ========================================================
 
 const icons = {
-    "Galaxy": `<img src="./Galaxy.png" alt="Galaxy" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
-    "Nebula": `<img src="./Nebula.png" alt="Nebula" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
-    "Globular Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
-    "Open Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
-    "Alignment": `<svg viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`
+    "Galaxy": `<img src="./Galaxy.png" alt="Galaxy" style="width:100%; height:100%; object-fit:contain;" />`,
+    "Nebula": `<img src="./Nebula.png" alt="Nebula" style="width:100%; height:100%; object-fit:contain;" />`,
+    "Globular Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain;" />`,
+    "Open Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain;" />`,
+    "Alignment": `<svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`
 };
 
 let isListExpanded = false; 
 let activeCategory = 'All';
+
 
 function renderDSOList() {
     const listContainer = document.getElementById('dsoList');
