@@ -3,11 +3,11 @@
 // ========================================================
 
 const icons = {
-    "Galaxy": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 12 2.5 7.5"></path><path d="M12 12l9.5 4.5"></path></svg>`,
-    "Nebula": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19c-2.5 0-4-2.5-6.5-2.5S7 19 4.5 19 2 16.5 2 14c0-2.5 2.5-4 5-4s4 2.5 6.5 2.5 4-2.5 6.5-2.5 2.5 2.5 2.5 5c0 2.5-2.5 5-5 5z"></path></svg>`,
-    "Globular Cluster": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="8" r="1"></circle><circle cx="12" cy="16" r="1"></circle><circle cx="8" cy="12" r="1"></circle><circle cx="16" cy="12" r="1"></circle></svg>`,
-    "Open Cluster": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="8" r="1"></circle><circle cx="12" cy="16" r="1"></circle><circle cx="8" cy="12" r="1"></circle><circle cx="16" cy="12" r="1"></circle></svg>`,
-    "Alignment": `<svg viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`
+    "Galaxy": `<img src="./Galaxy.png" alt="Galaxy" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
+    "Nebula": `<img src="./Nebula.png" alt="Nebula" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
+    "Globular Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
+    "Open Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain; filter: drop-shadow(0 0 3px #ff0000);" />`,
+    "Alignment": `<svg viewBox="0 0 24 24" fill="none" stroke="#ff0000" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`
 };
 
 let isListExpanded = false; 
@@ -17,7 +17,6 @@ function renderDSOList() {
     const listContainer = document.getElementById('dsoList');
     listContainer.innerHTML = ''; 
 
-    // Relies on dsoDatabase being loaded prior from database.js
     dsoDatabase.forEach(dso => {
         if (dso.type === 'Alignment') return;
         
@@ -154,8 +153,32 @@ function updateDSOVisibility() {
     const sunPos = calculateAltAz(sunCoords.ra, sunCoords.dec, userLat, userLon, rightNow);
     const isNight = sunPos.altitude <= -18; 
     
+    const listContainer = document.getElementById('dsoList');
+    if(!listContainer) return;
+
+    const existingMsg = document.getElementById('status-msg');
+    if (existingMsg) existingMsg.remove();
+
     const currentSearch = searchInput ? searchInput.value.toLowerCase().trim() : '';
     const isMoonModeActive = moonToggle ? moonToggle.checked : false;
+
+    // --- RESTORED NIGHTFALL LOGIC ---
+    if (!isNight && currentSearch === '') {
+        dsoDatabase.forEach(dso => {
+            const targetElement = document.getElementById(`list-target-${dso.id.replace(/\s+/g, '')}`);
+            if (targetElement) targetElement.style.display = 'none';
+        });
+        if(showMoreBtn) showMoreBtn.style.display = 'none';
+
+        const sunMessage = document.createElement('div');
+        sunMessage.id = 'status-msg';
+        sunMessage.style.color = 'var(--text-main)';
+        sunMessage.style.textAlign = 'center';
+        sunMessage.style.padding = '20px';
+        sunMessage.innerHTML = `<strong>Waiting for nightfall...</strong><br>The sun is currently at ${sunPos.altitude}°.<br>True darkness begins at -18°.<br><br><em>Use the search bar above to browse the catalog.</em>`;
+        listContainer.appendChild(sunMessage);
+        return; 
+    }
 
     let visibleIndex = 0;
     let totalAvailable = 0;
@@ -259,7 +282,7 @@ function openInfoModal(dso) {
         const position = calculateAltAz(dso.ra, dso.dec, userLat, userLon, rightNow);
         
         if (position.altitude < 0 && dso.type !== 'Alignment') {
-            altDisplay.innerHTML = `Altitude: <span style="color:#ff4444">${position.altitude}°</span>`;
+            altDisplay.innerHTML = `Altitude: <span style="color:#ff0000">${position.altitude}°</span>`;
             locateBtn.disabled = true;
             locateBtn.innerText = "Below Horizon";
         } else {
