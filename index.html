@@ -7,11 +7,12 @@
     <link rel="manifest" href="./manifest.json">
     <style>
         :root {
-            --bg-color: #050505;
-            --panel-bg: #111;
-            --text-main: #ff3333;
-            --text-dim: #882222;
-            --accent: #ff0000;
+            --bg-color: #0a0a0a;
+            --panel-bg: #111111;
+            --text-main: #ffffff;
+            --text-dim: #aaaaaa;
+            --accent: #ff3333;
+            --accent-dim: #551111;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; user-select: none; }
@@ -20,61 +21,57 @@
         .app-header { background-color: var(--panel-bg); padding: 15px; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; }
         
         .search-container { display: flex; position: relative; margin-bottom: 10px; }
-        #dsoSearchInput { width: 100%; padding: 12px 40px 12px 15px; background-color: #000; border: 1px solid var(--text-dim); color: var(--text-main); border-radius: 8px; font-size: 16px; }
-        #clearSearchBtn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-dim); font-size: 20px; display: none; padding: 5px;}
+        /* Restored White Search Bar */
+        #dsoSearchInput { width: 100%; padding: 12px 40px 12px 15px; background-color: #000; border: 1px solid #ffffff; color: #ffffff; border-radius: 8px; font-size: 16px; }
+        #clearSearchBtn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #ffffff; font-size: 20px; display: none; padding: 5px;}
 
         .moon-toggle-container { margin: 10px 0 15px 5px; color: #ffaa00; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
         .moon-toggle-container input { transform: scale(1.3); }
 
         .category-filters { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
-        .cat-btn { background-color: #000; color: var(--text-dim); border: 1px solid var(--text-dim); padding: 8px 16px; border-radius: 20px; white-space: nowrap; }
-        .cat-btn.active { background-color: var(--text-dim); color: #000; font-weight: bold; }
+        /* Restored Category Buttons */
+        .cat-btn { background-color: #000; color: var(--accent); border: 1px solid var(--accent-dim); padding: 8px 16px; border-radius: 20px; white-space: nowrap; font-size: 0.9rem; }
+        .cat-btn.active { background-color: var(--accent); color: #000; font-weight: bold; border: 1px solid var(--accent); }
 
         .action-row { display: flex; padding: 15px; }
-        .action-btn { flex: 1; padding: 12px; background-color: var(--panel-bg); border: 1px solid var(--text-dim); color: var(--text-main); border-radius: 8px; font-weight: bold; text-align: center; }
+        /* Restored Polar Align Button */
+        .action-btn { flex: 1; padding: 12px; background-color: #000; border: 1px solid var(--accent); color: #ffffff; border-radius: 8px; font-weight: bold; text-align: center; }
 
         #dsoList { padding: 0 15px 20px 15px; display: flex; flex-direction: column; gap: 10px; }
-        .dso-item { display: flex; align-items: center; background-color: var(--panel-bg); border: 1px solid #330000; padding: 15px; border-radius: 10px; text-align: left; color: var(--text-main); }
+        .dso-item { display: flex; align-items: center; background-color: var(--panel-bg); border: 1px solid #222; padding: 15px; border-radius: 10px; text-align: left; color: var(--text-main); }
         .dso-item.dimmed { opacity: 0.4; }
         
-        .dso-icon { width: 40px; height: 40px; margin-right: 15px; flex-shrink: 0; }
+        .dso-icon { width: 40px; height: 40px; margin-right: 15px; flex-shrink: 0; display: flex; justify-content: center; align-items: center; }
         .dso-text-group { flex: 1; }
         .dso-id { font-weight: bold; font-size: 1.1rem; }
         .dso-name { font-size: 0.85rem; color: var(--text-dim); margin-top: 2px; }
         .dso-status { font-size: 0.75rem; margin-top: 4px; font-weight: bold; }
         
         .status-up { color: #00ff00; }
-        .status-down { color: #ff0000; }
+        .status-down { color: #ff3333; }
         .status-warn { color: #ffaa00; }
         .dso-arrow { font-size: 1.5rem; color: var(--text-dim); }
 
-        #showMoreBtn { width: calc(100% - 30px); margin: 0 15px 30px 15px; padding: 15px; background-color: #220000; border: 1px solid var(--accent); color: var(--text-main); border-radius: 8px; font-weight: bold; display: none; }
+        #showMoreBtn { width: calc(100% - 30px); margin: 0 15px 30px 15px; padding: 15px; background-color: #1a1a1a; border: 1px solid #333; color: var(--text-main); border-radius: 8px; font-weight: bold; display: none; }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 200; padding: 20px; }
-        .modal-content { background: var(--panel-bg); border: 2px solid var(--accent); border-radius: 12px; width: 100%; max-width: 400px; padding: 20px; text-align: center; }
-        
+        /* Modals & Camera UI (Kept exactly the same as your working version) */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 200; padding: 20px; }
+        .modal-content { background: var(--panel-bg); border-radius: 12px; border: 1px solid var(--accent); width: 100%; max-width: 400px; padding: 20px; text-align: center; }
         .modal-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin: 20px 0; font-size: 0.9rem; }
         .modal-desc { text-align: left; font-size: 0.85rem; color: #ccc; margin-bottom: 20px; line-height: 1.4; }
-        
         .modal-btn { width: 100%; padding: 15px; margin-top: 10px; border-radius: 8px; font-weight: bold; border: none; }
         .btn-primary { background-color: var(--accent); color: #fff; }
         .btn-secondary { background-color: transparent; border: 1px solid var(--text-dim); color: var(--text-main); }
-        .btn-primary:disabled { background-color: #333; color: #666; }
-
-        /* AR Camera UI */
+        .btn-primary:disabled { background-color: #444; color: #888; }
         #cameraUI { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000; z-index: 300; }
         #cameraFeed { width: 100%; height: 100%; object-fit: cover; }
-        
         .hud-top { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
-        #backButton { background: rgba(0,0,0,0.5); border: 1px solid var(--accent); color: var(--accent); padding: 10px 15px; border-radius: 8px; font-weight: bold; }
+        #backButton { background: rgba(0,0,0,0.5); border: 1px solid #fff; color: #fff; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
         #activeTargetName { color: var(--accent); font-weight: bold; font-size: 1.2rem; text-shadow: 0 0 5px #000; }
-
         .crosshair-center { position: absolute; top: 50%; left: 50%; width: 2px; height: 40px; background: rgba(255,0,0,0.5); transform: translate(-50%, -50%); pointer-events: none; }
         .crosshair-center::after { content: ''; position: absolute; top: 50%; left: 50%; width: 40px; height: 2px; background: rgba(255,0,0,0.5); transform: translate(-50%, -50%); }
-
         #yellowDot { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; border-radius: 50%; display: none; transform: translate(-50%, -50%); transition: background-color 0.2s, box-shadow 0.2s; }
         #directionArrow { position: absolute; top: 50%; left: 50%; font-size: 40px; display: none; margin-top: -20px; margin-left: -20px; line-height: 40px; text-align: center; width: 40px; height: 40px; }
-
         .compass-widget { position: absolute; bottom: 30px; right: 20px; width: 60px; height: 60px; border: 2px solid var(--accent); border-radius: 50%; background: rgba(0,0,0,0.5); }
         #compassNeedle { position: absolute; top: 5%; left: 45%; width: 10%; height: 90%; background: linear-gradient(to bottom, var(--accent) 50%, transparent 50%); transform-origin: center; }
     </style>
