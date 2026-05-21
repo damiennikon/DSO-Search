@@ -276,39 +276,46 @@ function fetchDeclination(lat, lon) {
 
     suggestionBox.innerHTML = `📡 <em>Detecting local magnetic declination...</em>`;
 
-    // 1. Fetch the City Name (OpenStreetMap)
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+    // 1. Fetch NOAA Magnetic Data FIRST (Most Important)
+    fetch(`https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination?lat1=${lat}&lon1=${lon}&resultFormat=json`)
         .then(res => res.json())
-        .then(geoData => {
-            let cityName = "your location";
-            if (geoData.address) {
-                cityName = geoData.address.city || geoData.address.town || geoData.address.suburb || "your location";
+        .then(magData => {
+            hasFetchedDeclination = true;
+            if (magData && magData.result && magData.result[0]) {
+                let detectedDec = magData.result[0].declination.toFixed(1);
+                
+                // 2. Try to get the City Name (OpenStreetMap) - if this fails, we don't care!
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                    .then(res => res.json())
+                    .then(geoData => {
+                        let cityName = "Your Location";
+                        if (geoData.address) {
+                            cityName = geoData.address.city || geoData.address.town || geoData.address.suburb || "Your Location";
+                        }
+                        renderSuggestion(cityName, detectedDec, suggestionBox);
+                    })
+                    .catch(err => {
+                        // City name failed, but we still have the magnetic data!
+                        renderSuggestion("Your GPS Location", detectedDec, suggestionBox);
+                    });
             }
-            
-            // 2. Fetch the Magnetic Declination (NOAA Database)
-            return fetch(`https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination?lat1=${lat}&lon1=${lon}&resultFormat=json`)
-                .then(res => res.json())
-                .then(magData => {
-                    hasFetchedDeclination = true;
-                    if (magData && magData.result && magData.result[0]) {
-                        let detectedDec = magData.result[0].declination.toFixed(1);
-                        
-                        // 3. Inject the clickable message into the UI
-                        suggestionBox.innerHTML = `📍 <b>${cityName.toUpperCase()}</b> detected.<br>
-                        Local declination is <b>${detectedDec}°</b>.<br>
-                        <span style="color: var(--ok-green); font-size: 1.1rem; font-weight: bold; cursor: pointer; text-decoration: underline; display: inline-block; margin-top: 10px;" 
-                              onclick="document.getElementById('magDecInput').value = ${detectedDec}; 
-                                       document.getElementById('magDecInput').dispatchEvent(new Event('change')); 
-                                       this.innerText = '✅ APPLIED!'; this.style.color = 'var(--text-main)'; this.style.textDecoration = 'none';">
-                            TAP TO APPLY
-                        </span>`;
-                    }
-                });
         })
         .catch(err => {
-            suggestionBox.innerHTML = `Set to your local offset. This saves automatically for offline field use.`;
-            console.log("Offline mode: Relying on saved manual input.");
+            suggestionBox.innerHTML = `⚠️ Auto-detect failed (Offline or Blocked). Please set manually.`;
+            console.log("NOAA API Error:", err);
         });
+}
+
+// Helper function to build the clickable UI text
+function renderSuggestion(cityName, detectedDec, suggestionBox) {
+    suggestionBox.innerHTML = `📍 <b>${cityName.toUpperCase()}</b> detected.<br>
+        Local declination is <b>${detectedDec}°</b>.<br>
+        <span style="color: var(--ok-green); font-size: 1.1rem; font-weight: bold; cursor: pointer; text-decoration: underline; display: inline-block; margin-top: 10px;" 
+              onclick="document.getElementById('magDecInput').value = ${detectedDec}; 
+                       document.getElementById('magDecInput').dispatchEvent(new Event('change')); 
+                       this.innerText = '✅ APPLIED!'; this.style.color = 'var(--text-main)'; this.style.textDecoration = 'none';">
+            TAP TO APPLY
+        </span>`;
 }
 
 if ("geolocation" in navigator) {
@@ -320,10 +327,11 @@ if ("geolocation" in navigator) {
             fetchDeclination(userLat, userLon); // Trigger auto-detect
         },
         (error) => {
-            console.error("GPS Error");
-            userLat = -27.58; 
+            console.warn("GPS Error or Timeout. Using default coordinates.");
+            userLat = -27.58; // Acacia Ridge / Loganholme default fallback
             userLon = 153.03; 
             updateDSOVisibility(); 
+            fetchDeclination(userLat, userLon); // Try fetching anyway with fallback coords
         },
         { enableHighAccuracy: true, timeout: 10000 }
     );
