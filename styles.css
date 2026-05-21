@@ -1,5 +1,5 @@
 /* ========================================================
-   DSO TRACKER: TACTICAL NIGHT VISION UI
+   DSO TRACKER: TACTICAL NIGHT VISION UI (2x2 GRID)
    ======================================================== */
 
 :root {
@@ -34,13 +34,38 @@ body { background-color: var(--bg-black); color: var(--red-main); font-family: "
 .moon-toggle-container { margin: 0 0 18px 5px; color: var(--warn-amber); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 12px; font-weight: 700; }
 .moon-toggle-container input { transform: scale(1.5); accent-color: var(--warn-amber); filter: drop-shadow(0 0 5px rgba(204, 102, 0, 0.3)); }
 
-/* Category Filters (HUD Buttons) */
-.category-filters { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
-.category-filters::-webkit-scrollbar { display: none; }
-.cat-btn { background-color: var(--surface-dark); color: var(--red-dim); border: 1px solid var(--red-border); padding: 10px 18px; border-radius: 6px; white-space: nowrap; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-.cat-btn.active { background-color: var(--red-glow); color: var(--red-bright); border-color: var(--red-bright); box-shadow: 0 0 10px var(--red-glow-strong), inset 0 0 8px var(--red-glow); text-shadow: 0 0 5px var(--red-bright); }
+/* Category Filters (HUD Buttons - 2x2 Grid) */
+.category-filters { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 12px; 
+    padding-bottom: 10px; 
+}
 
-/* --- MAIN ACTIONS --- */
+.cat-btn { 
+    width: 100%;
+    background-color: var(--surface-dark); 
+    color: var(--red-dim); 
+    border: 1px solid var(--red-border); 
+    padding: 14px 10px; 
+    border-radius: 6px; 
+    font-size: 0.85rem; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+    transition: all 0.2s ease; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5); 
+}
+
+.cat-btn.active { 
+    background-color: var(--red-glow); 
+    color: var(--red-bright); 
+    border-color: var(--red-bright); 
+    box-shadow: 0 0 10px var(--red-glow-strong), inset 0 0 8px var(--red-glow); 
+    text-shadow: 0 0 5px var(--red-bright); 
+}
+
+/* --- MAIN ACTIONS (Polar Align) --- */
 .action-row { display: flex; padding: 20px 16px 10px 16px; }
 .action-btn { flex: 1; padding: 16px; background: linear-gradient(135deg, var(--surface-light), var(--surface-dark)); border: 1px dashed var(--red-dim); color: var(--red-main); border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; }
 .action-btn:active { background: var(--red-glow); border-style: solid; border-color: var(--red-bright); color: var(--red-bright); box-shadow: 0 0 15px var(--red-glow); }
