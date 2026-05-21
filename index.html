@@ -37,7 +37,14 @@
 
     <div id="polarModal" class="modal-overlay">
         <div class="modal-content">
-            <h2 style="margin-bottom: 20px; color: #ff0000; text-transform: uppercase; letter-spacing: 1px;">Mount Alignment</h2>
+            <h2 style="margin-bottom: 10px; color: #ff0000; text-transform: uppercase; letter-spacing: 1px;">Mount Alignment</h2>
+            
+            <div style="margin-bottom: 20px; background: var(--surface-dark); padding: 15px; border-radius: 6px; border: 1px solid var(--red-border); text-align: left;">
+                <label style="color: var(--red-dim); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Magnetic Declination (°)</label>
+                <input type="number" id="magDecInput" step="0.1" style="width: 100%; padding: 10px; background: #000; border: 1px solid var(--red-border); color: var(--red-bright); font-size: 1.1rem; border-radius: 6px; font-weight: bold; font-family: monospace;">
+                <p id="magDecSuggestion" style="font-size: 0.85rem; color: var(--warn-amber); margin-top: 12px; line-height: 1.4;">Set to your local offset. This saves automatically for offline field use.</p>
+            </div>
+
             <button id="btnSCP" class="modal-btn btn-primary">Locate SCP (South)</button>
             <button id="btnNCP" class="modal-btn btn-primary" style="margin-top: 15px;">Locate NCP (North)</button>
             <button id="closePolarModalBtn" class="modal-btn btn-secondary" style="margin-top: 20px;">Cancel</button>
