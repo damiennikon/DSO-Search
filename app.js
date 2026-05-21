@@ -13,6 +13,20 @@ const icons = {
 let isListExpanded = false; 
 let activeCategory = 'All';
 
+// --- MAGNETIC DECLINATION MEMORY ---
+let localDeclination = parseFloat(localStorage.getItem('magDeclination')) || 11.0;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const magDecInput = document.getElementById('magDecInput');
+    if(magDecInput) {
+        magDecInput.value = localDeclination;
+        magDecInput.addEventListener('change', (e) => {
+            localDeclination = parseFloat(e.target.value) || 0;
+            localStorage.setItem('magDeclination', localDeclination);
+        });
+    }
+});
+
 function renderDSOList() {
     const listContainer = document.getElementById('dsoList');
     listContainer.innerHTML = ''; 
@@ -39,7 +53,7 @@ function renderDSOList() {
     });
 }
 
-// SEARCH DEBOUNCE (Performance Upgrade)
+// SEARCH DEBOUNCE
 const searchInput = document.getElementById('dsoSearchInput');
 const clearBtn = document.getElementById('clearSearchBtn');
 const moonToggle = document.getElementById('moonFilterToggle');
@@ -52,7 +66,7 @@ if(searchInput) {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             updateDSOVisibility();
-        }, 200); // Waits 200ms after you stop typing to do the math
+        }, 200);
     });
 }
 
@@ -151,7 +165,6 @@ let userLon = null;
 const moonSafeNebulae = ["NGC 3372", "M 8", "M 42", "NGC 2070"];
 
 function updateDSOVisibility() {
-    // LAT/LON BUG FIX: Safely check for null rather than falsy 0
     if (userLat === null || userLon === null) return;
     const rightNow = new Date();
     
@@ -250,12 +263,61 @@ function updateDSOVisibility() {
 
 renderDSOList();
 
+// ==========================================
+// GPS & AUTO-DETECT MAGNETIC DECLINATION
+// ==========================================
+let hasFetchedDeclination = false; 
+
+function fetchDeclination(lat, lon) {
+    if (hasFetchedDeclination) return;
+    
+    const suggestionBox = document.getElementById('magDecSuggestion');
+    if (!suggestionBox) return;
+
+    suggestionBox.innerHTML = `📡 <em>Detecting local magnetic declination...</em>`;
+
+    // 1. Fetch the City Name (OpenStreetMap)
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+        .then(res => res.json())
+        .then(geoData => {
+            let cityName = "your location";
+            if (geoData.address) {
+                cityName = geoData.address.city || geoData.address.town || geoData.address.suburb || "your location";
+            }
+            
+            // 2. Fetch the Magnetic Declination (NOAA Database)
+            return fetch(`https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination?lat1=${lat}&lon1=${lon}&resultFormat=json`)
+                .then(res => res.json())
+                .then(magData => {
+                    hasFetchedDeclination = true;
+                    if (magData && magData.result && magData.result[0]) {
+                        let detectedDec = magData.result[0].declination.toFixed(1);
+                        
+                        // 3. Inject the clickable message into the UI
+                        suggestionBox.innerHTML = `📍 <b>${cityName.toUpperCase()}</b> detected.<br>
+                        Local declination is <b>${detectedDec}°</b>.<br>
+                        <span style="color: var(--ok-green); font-size: 1.1rem; font-weight: bold; cursor: pointer; text-decoration: underline; display: inline-block; margin-top: 10px;" 
+                              onclick="document.getElementById('magDecInput').value = ${detectedDec}; 
+                                       document.getElementById('magDecInput').dispatchEvent(new Event('change')); 
+                                       this.innerText = '✅ APPLIED!'; this.style.color = 'var(--text-main)'; this.style.textDecoration = 'none';">
+                            TAP TO APPLY
+                        </span>`;
+                    }
+                });
+        })
+        .catch(err => {
+            suggestionBox.innerHTML = `Set to your local offset. This saves automatically for offline field use.`;
+            console.log("Offline mode: Relying on saved manual input.");
+        });
+}
+
 if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
         (position) => {
             userLat = position.coords.latitude;
             userLon = position.coords.longitude;
             updateDSOVisibility();
+            fetchDeclination(userLat, userLon); // Trigger auto-detect
         },
         (error) => {
             console.error("GPS Error");
@@ -312,7 +374,6 @@ let activeStream = null;
 let wakeLock = null;
 let smoothedAz = null;
 
-// COMPASS SMOOTHING (Premium UI Upgrade)
 function smoothAngle(current, target, factor = 0.15) {
     if (current === null) return target;
     let delta = ((target - current + 540) % 360) - 180;
@@ -323,7 +384,7 @@ function handleAR(event) {
     if (!activeDSO || userLat === null || userLon === null) return;
 
     let rawAz = event.webkitCompassHeading || (360 - event.alpha);
-    let targetPhoneAz = (rawAz + 11) % 360; // Hardcoded QLD Declination
+    let targetPhoneAz = (rawAz + localDeclination) % 360; // DYNAMIC SAVED DECLINATION
     
     smoothedAz = smoothAngle(smoothedAz, targetPhoneAz);
     let phoneAlt = event.beta - 90; 
@@ -346,12 +407,12 @@ function handleAR(event) {
     if (distanceToTarget < 0.8) {
         arrow.style.display = 'none'; 
         dot.style.display = 'block';
-        dot.style.backgroundColor = '#008800'; // Night-vision safe green
+        dot.style.backgroundColor = '#008800'; 
         dot.style.boxShadow = '0 0 10px #008800, 0 0 20px #008800';
     } else if (distanceToTarget < 5) {
         arrow.style.display = 'none'; 
         dot.style.display = 'block';
-        dot.style.backgroundColor = '#cc6600'; // Night-vision safe amber
+        dot.style.backgroundColor = '#cc6600'; 
         dot.style.boxShadow = '0 0 10px #cc6600, 0 0 20px #cc6600';
     } else {
         dot.style.display = 'none';
@@ -366,7 +427,6 @@ function handleAR(event) {
     }
 }
 
-// SCREEN WAKE LOCK (Keeps phone alive during alignment)
 async function requestWakeLock() {
     try {
         if ('wakeLock' in navigator) {
@@ -380,7 +440,7 @@ async function requestWakeLock() {
 function openCamera(dso) {
     const cameraUI = document.getElementById('cameraUI');
     const cameraFeed = document.getElementById('cameraFeed');
-    smoothedAz = null; // Reset smoothing on fresh load
+    smoothedAz = null; 
     
     window.removeEventListener('deviceorientation', handleAR);
     window.removeEventListener('deviceorientationabsolute', handleAR);
@@ -392,7 +452,6 @@ function openCamera(dso) {
                 cameraFeed.srcObject = stream;
                 document.getElementById('activeTargetName').innerText = dso.name;
                 
-                // CSS DISPLAY RESTORE FIX
                 document.querySelector('main').style.display = 'none';
                 document.querySelector('.app-header').style.display = 'none';
                 const actionRow = document.querySelector('.action-row');
@@ -401,7 +460,7 @@ function openCamera(dso) {
                 if(showMoreBtn) showMoreBtn.style.display = 'none';
 
                 cameraUI.style.display = 'block';
-                requestWakeLock(); // Request screen to stay on
+                requestWakeLock();
 
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                     DeviceOrientationEvent.requestPermission().then(permissionState => {
@@ -417,7 +476,6 @@ function openCamera(dso) {
 }
 
 function closeCamera() {
-    // CAMERA RESET FIX: Release tracks AND clear srcObject completely
     if (activeStream) {
         activeStream.getTracks().forEach(track => track.stop());
     }
@@ -426,7 +484,7 @@ function closeCamera() {
     activeStream = null;
 
     if (wakeLock !== null) {
-        wakeLock.release().then(() => wakeLock = null); // Let screen sleep again
+        wakeLock.release().then(() => wakeLock = null); 
     }
 
     window.removeEventListener('deviceorientation', handleAR);
@@ -434,7 +492,6 @@ function closeCamera() {
     
     document.getElementById('cameraUI').style.display = 'none';
     
-    // CSS DISPLAY RESTORE FIX: Use '' to respect the styles.css file
     document.querySelector('main').style.display = '';
     document.querySelector('.app-header').style.display = '';
     const actionRow = document.querySelector('.action-row');
