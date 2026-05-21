@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DSO Tracker</title>
     <link rel="manifest" href="./manifest.json">
-    <link rel="stylesheet" href="./styles.css?v=2">
+    <link rel="stylesheet" href="./styles.css?v=4">
 </head>
 <body>
 
     <header class="app-header">
         <div class="search-container">
-            <input type="text" id="dsoSearchInput" placeholder="Search targets (e.g. M 42, Orion)...">
+            <input type="text" id="dsoSearchInput" placeholder="SEARCH CATALOG...">
             <button id="clearSearchBtn">×</button>
         </div>
         
         <label class="moon-toggle-container">
             <input type="checkbox" id="moonFilterToggle">
-            🌕 Full Moon Mode (Hide faint targets)
+            Moon Filter Active
         </label>
 
         <div class="category-filters">
@@ -37,9 +37,9 @@
 
     <div id="polarModal" class="modal-overlay">
         <div class="modal-content">
-            <h2 style="margin-bottom: 20px;">Mount Alignment</h2>
+            <h2 style="margin-bottom: 20px; color: #ff0000; text-transform: uppercase; letter-spacing: 1px;">Mount Alignment</h2>
             <button id="btnSCP" class="modal-btn btn-primary">Locate SCP (South)</button>
-            <button id="btnNCP" class="modal-btn btn-primary" style="margin-top: 15px;">Locate NCP (Reverse/North)</button>
+            <button id="btnNCP" class="modal-btn btn-primary" style="margin-top: 15px;">Locate NCP (North)</button>
             <button id="closePolarModalBtn" class="modal-btn btn-secondary" style="margin-top: 20px;">Cancel</button>
         </div>
     </div>
@@ -47,13 +47,13 @@
     <div id="infoModal" class="modal-overlay">
         <div class="modal-content">
             <div id="modalIcon" style="width: 60px; height: 60px; margin: 0 auto;"></div>
-            <h2 id="modalTitle" style="margin-top: 10px;"></h2>
-            <div id="modalId" style="color: var(--text-dim); font-weight: bold;"></div>
+            <h2 id="modalTitle" style="margin-top: 10px; color: #ff0000;"></h2>
+            <div id="modalId" style="color: #881111; font-weight: bold; letter-spacing: 1px;"></div>
             <div class="modal-info-grid">
-                <div><strong>Type:</strong> <span id="modalType"></span></div>
-                <div><strong>Season:</strong> <span id="modalSeason"></span></div>
-                <div><strong>Distance:</strong> <span id="modalDist"></span></div>
-                <div id="modalAlt" style="grid-column: span 2; text-align: center; font-weight: bold; margin-top: 10px;"></div>
+                <div><strong>Type</strong> <span id="modalType"></span></div>
+                <div><strong>Season</strong> <span id="modalSeason"></span></div>
+                <div><strong>Distance</strong> <span id="modalDist"></span></div>
+                <div id="modalAlt" style="grid-column: span 2; text-align: center; font-weight: bold; margin-top: 10px; font-size: 1.1rem;"></div>
             </div>
             <div id="modalDesc" class="modal-desc"></div>
             <button id="locateBtn" class="modal-btn btn-primary">Locate in Sky</button>
