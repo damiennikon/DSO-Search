@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dso-tracker-v30';
+const CACHE_NAME = 'dso-tracker-v31';
 
 // List of all files the app needs to work offline
 const ASSETS_TO_CACHE = [
