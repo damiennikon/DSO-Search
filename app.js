@@ -1,5 +1,5 @@
 // ========================================================
-// --- DSO TRACKER: CORE LOGIC ---
+// --- DSO TRACKER: CORE LOGIC (TACTICAL ENGINE) ---
 // ========================================================
 
 const icons = {
@@ -39,15 +39,20 @@ function renderDSOList() {
     });
 }
 
-// Search and Moon Filter
+// SEARCH DEBOUNCE (Performance Upgrade)
 const searchInput = document.getElementById('dsoSearchInput');
 const clearBtn = document.getElementById('clearSearchBtn');
 const moonToggle = document.getElementById('moonFilterToggle');
+let searchTimeout;
 
 if(searchInput) {
     searchInput.addEventListener('input', function() {
         if(clearBtn) clearBtn.style.display = this.value.length > 0 ? 'block' : 'none';
-        updateDSOVisibility();
+        
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            updateDSOVisibility();
+        }, 200); // Waits 200ms after you stop typing to do the math
     });
 }
 
@@ -146,7 +151,8 @@ let userLon = null;
 const moonSafeNebulae = ["NGC 3372", "M 8", "M 42", "NGC 2070"];
 
 function updateDSOVisibility() {
-    if (!userLat || !userLon) return;
+    // LAT/LON BUG FIX: Safely check for null rather than falsy 0
+    if (userLat === null || userLon === null) return;
     const rightNow = new Date();
     
     const sunCoords = getSunPosition(rightNow);
@@ -162,7 +168,6 @@ function updateDSOVisibility() {
     const currentSearch = searchInput ? searchInput.value.toLowerCase().trim() : '';
     const isMoonModeActive = moonToggle ? moonToggle.checked : false;
 
-    // --- RESTORED NIGHTFALL LOGIC ---
     if (!isNight && currentSearch === '') {
         dsoDatabase.forEach(dso => {
             const targetElement = document.getElementById(`list-target-${dso.id.replace(/\s+/g, '')}`);
@@ -277,7 +282,7 @@ function openInfoModal(dso) {
     const locateBtn = document.getElementById('locateBtn');
     const altDisplay = document.getElementById('modalAlt');
 
-    if (userLat && userLon) {
+    if (userLat !== null && userLon !== null) {
         const rightNow = new Date();
         const position = calculateAltAz(dso.ra, dso.dec, userLat, userLon, rightNow);
         
@@ -300,22 +305,35 @@ document.getElementById('locateBtn').addEventListener('click', () => {
     openCamera(activeDSO);
 });
 
-// Camera & AR Radar
+// ==========================================
+// AR CAMERA & RADAR HUD
+// ==========================================
 let activeStream = null;
+let wakeLock = null;
+let smoothedAz = null;
+
+// COMPASS SMOOTHING (Premium UI Upgrade)
+function smoothAngle(current, target, factor = 0.15) {
+    if (current === null) return target;
+    let delta = ((target - current + 540) % 360) - 180;
+    return (current + delta * factor + 360) % 360;
+}
 
 function handleAR(event) {
-    if (!activeDSO || !userLat || !userLon) return;
+    if (!activeDSO || userLat === null || userLon === null) return;
 
     let rawAz = event.webkitCompassHeading || (360 - event.alpha);
-    let phoneAz = (rawAz + 11) % 360; 
+    let targetPhoneAz = (rawAz + 11) % 360; // Hardcoded QLD Declination
+    
+    smoothedAz = smoothAngle(smoothedAz, targetPhoneAz);
     let phoneAlt = event.beta - 90; 
 
-    document.getElementById('compassNeedle').style.transform = `rotate(${-phoneAz}deg)`;
+    document.getElementById('compassNeedle').style.transform = `rotate(${-smoothedAz}deg)`;
 
     const rightNow = new Date();
     const starPos = calculateAltAz(activeDSO.ra, activeDSO.dec, userLat, userLon, rightNow);
 
-    let rawDeltaAz = starPos.azimuth - phoneAz;
+    let rawDeltaAz = starPos.azimuth - smoothedAz;
     let deltaAz = ((rawDeltaAz + 180) % 360 + 360) % 360 - 180;
     let deltaAlt = starPos.altitude - phoneAlt;
 
@@ -328,13 +346,13 @@ function handleAR(event) {
     if (distanceToTarget < 0.8) {
         arrow.style.display = 'none'; 
         dot.style.display = 'block';
-        dot.style.backgroundColor = '#00ff00';
-        dot.style.boxShadow = '0 0 10px #00ff00, 0 0 20px #00ff00';
+        dot.style.backgroundColor = '#008800'; // Night-vision safe green
+        dot.style.boxShadow = '0 0 10px #008800, 0 0 20px #008800';
     } else if (distanceToTarget < 5) {
         arrow.style.display = 'none'; 
         dot.style.display = 'block';
-        dot.style.backgroundColor = '#00aaff';
-        dot.style.boxShadow = '0 0 10px #00aaff, 0 0 20px #00aaff';
+        dot.style.backgroundColor = '#cc6600'; // Night-vision safe amber
+        dot.style.boxShadow = '0 0 10px #cc6600, 0 0 20px #cc6600';
     } else {
         dot.style.display = 'none';
         arrow.style.display = 'block'; 
@@ -348,12 +366,22 @@ function handleAR(event) {
     }
 }
 
-// CLAUDE FIXES APPLIED BELOW:
+// SCREEN WAKE LOCK (Keeps phone alive during alignment)
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+        }
+    } catch (err) {
+        console.error("Wake Lock failed:", err);
+    }
+}
+
 function openCamera(dso) {
     const cameraUI = document.getElementById('cameraUI');
     const cameraFeed = document.getElementById('cameraFeed');
+    smoothedAz = null; // Reset smoothing on fresh load
     
-    // Prevent event listener stacking (Memory leak fix)
     window.removeEventListener('deviceorientation', handleAR);
     window.removeEventListener('deviceorientationabsolute', handleAR);
     
@@ -364,7 +392,7 @@ function openCamera(dso) {
                 cameraFeed.srcObject = stream;
                 document.getElementById('activeTargetName').innerText = dso.name;
                 
-                // Hide ALL main UI elements, including buttons outside <main>
+                // CSS DISPLAY RESTORE FIX
                 document.querySelector('main').style.display = 'none';
                 document.querySelector('.app-header').style.display = 'none';
                 const actionRow = document.querySelector('.action-row');
@@ -373,6 +401,7 @@ function openCamera(dso) {
                 if(showMoreBtn) showMoreBtn.style.display = 'none';
 
                 cameraUI.style.display = 'block';
+                requestWakeLock(); // Request screen to stay on
 
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                     DeviceOrientationEvent.requestPermission().then(permissionState => {
@@ -388,19 +417,29 @@ function openCamera(dso) {
 }
 
 function closeCamera() {
-    if (activeStream) activeStream.getTracks().forEach(track => track.stop());
+    // CAMERA RESET FIX: Release tracks AND clear srcObject completely
+    if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
+    }
+    const cameraFeed = document.getElementById('cameraFeed');
+    cameraFeed.srcObject = null;
+    activeStream = null;
+
+    if (wakeLock !== null) {
+        wakeLock.release().then(() => wakeLock = null); // Let screen sleep again
+    }
+
     window.removeEventListener('deviceorientation', handleAR);
     window.removeEventListener('deviceorientationabsolute', handleAR);
     
     document.getElementById('cameraUI').style.display = 'none';
     
-    // Restore ALL UI elements when closing the camera
-    document.querySelector('main').style.display = 'flex';
-    document.querySelector('.app-header').style.display = 'block';
+    // CSS DISPLAY RESTORE FIX: Use '' to respect the styles.css file
+    document.querySelector('main').style.display = '';
+    document.querySelector('.app-header').style.display = '';
     const actionRow = document.querySelector('.action-row');
-    if(actionRow) actionRow.style.display = 'flex';
+    if(actionRow) actionRow.style.display = '';
     
-    // Re-run the visibility check (this automatically handles the Show More button state)
     updateDSOVisibility(); 
 
     document.getElementById('directionArrow').style.display = 'none';
