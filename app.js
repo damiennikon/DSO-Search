@@ -13,7 +13,6 @@ const icons = {
 let isListExpanded = false; 
 let activeCategory = 'All';
 
-
 function renderDSOList() {
     const listContainer = document.getElementById('dsoList');
     listContainer.innerHTML = ''; 
@@ -173,7 +172,7 @@ function updateDSOVisibility() {
 
         const sunMessage = document.createElement('div');
         sunMessage.id = 'status-msg';
-        sunMessage.style.color = 'var(--text-main)';
+        sunMessage.style.color = 'var(--red-main)';
         sunMessage.style.textAlign = 'center';
         sunMessage.style.padding = '20px';
         sunMessage.innerHTML = `<strong>Waiting for nightfall...</strong><br>The sun is currently at ${sunPos.altitude}°.<br>True darkness begins at -18°.<br><br><em>Use the search bar above to browse the catalog.</em>`;
@@ -283,11 +282,11 @@ function openInfoModal(dso) {
         const position = calculateAltAz(dso.ra, dso.dec, userLat, userLon, rightNow);
         
         if (position.altitude < 0 && dso.type !== 'Alignment') {
-            altDisplay.innerHTML = `Altitude: <span style="color:#ff0000">${position.altitude}°</span>`;
+            altDisplay.innerHTML = `Altitude: <span style="color:#881111">${position.altitude}°</span>`;
             locateBtn.disabled = true;
             locateBtn.innerText = "Below Horizon";
         } else {
-            altDisplay.innerHTML = `Altitude: <span style="color:#00ff00">${position.altitude}°</span>`;
+            altDisplay.innerHTML = `Altitude: <span style="color:#008800">${position.altitude}°</span>`;
             locateBtn.disabled = false;
             locateBtn.innerText = "Locate in Sky";
         }
@@ -349,9 +348,14 @@ function handleAR(event) {
     }
 }
 
+// CLAUDE FIXES APPLIED BELOW:
 function openCamera(dso) {
     const cameraUI = document.getElementById('cameraUI');
     const cameraFeed = document.getElementById('cameraFeed');
+    
+    // Prevent event listener stacking (Memory leak fix)
+    window.removeEventListener('deviceorientation', handleAR);
+    window.removeEventListener('deviceorientationabsolute', handleAR);
     
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
@@ -360,8 +364,14 @@ function openCamera(dso) {
                 cameraFeed.srcObject = stream;
                 document.getElementById('activeTargetName').innerText = dso.name;
                 
+                // Hide ALL main UI elements, including buttons outside <main>
                 document.querySelector('main').style.display = 'none';
                 document.querySelector('.app-header').style.display = 'none';
+                const actionRow = document.querySelector('.action-row');
+                if(actionRow) actionRow.style.display = 'none'; 
+                const showMoreBtn = document.getElementById('showMoreBtn');
+                if(showMoreBtn) showMoreBtn.style.display = 'none';
+
                 cameraUI.style.display = 'block';
 
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -383,8 +393,16 @@ function closeCamera() {
     window.removeEventListener('deviceorientationabsolute', handleAR);
     
     document.getElementById('cameraUI').style.display = 'none';
+    
+    // Restore ALL UI elements when closing the camera
     document.querySelector('main').style.display = 'flex';
     document.querySelector('.app-header').style.display = 'block';
+    const actionRow = document.querySelector('.action-row');
+    if(actionRow) actionRow.style.display = 'flex';
+    
+    // Re-run the visibility check (this automatically handles the Show More button state)
+    updateDSOVisibility(); 
+
     document.getElementById('directionArrow').style.display = 'none';
     document.getElementById('yellowDot').style.display = 'none';
 }
