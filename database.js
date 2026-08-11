@@ -4,7 +4,9 @@
 
 const alignmentTargets = [
     { id: "SCP", name: "South Celestial Pole", ra: 0, dec: -90, type: "Alignment", dist: "N/A", season: "All Year", desc: "The exact True South rotational axis of the Earth." },
-    { id: "NCP", name: "North Celestial Pole", ra: 0, dec: 90, type: "Alignment", dist: "N/A", season: "All Year", desc: "The exact True North rotational axis of the Earth." }
+    { id: "NCP", name: "North Celestial Pole", ra: 0, dec: 90, type: "Alignment", dist: "N/A", season: "All Year", desc: "The exact True North rotational axis of the Earth." },
+    { id: "POLARIS", name: "Polaris", type: "Alignment", ra: 37.95, dec: 89.264, dist: "433 ly", season: "All Year", desc: "Reference star for fine northern polar alignment." },
+    { id: "SIGOCT", name: "Sigma Octantis", type: "Alignment", ra: 317.175, dec: -88.9567, dist: "281 ly", season: "All Year", desc: "Reference star for fine southern polar alignment." }
 ];
 
 const originalBatch = [

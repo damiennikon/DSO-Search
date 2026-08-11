@@ -415,6 +415,24 @@ function handleAR(event) {
     document.getElementById('compassNeedle').style.transform = `rotate(${-smoothedAz}deg)`;
 
     const rightNow = new Date();
+
+    if (window.refineModeActive && window.activeRefineStar) {
+        const refStarPos = calculateAltAz(window.activeRefineStar.ra, window.activeRefineStar.dec, userLat, userLon, rightNow);
+        let refRawDeltaAz = refStarPos.azimuth - smoothedAz;
+        let refDeltaAz = ((refRawDeltaAz + 180) % 360 + 360) % 360 - 180;
+        let refDeltaAlt = refStarPos.altitude - phoneAlt;
+
+        const refAngleRad = Math.atan2(refDeltaAz, refDeltaAlt);
+        const refAngleDeg = refAngleRad * R2D;
+
+        const refineMarker = document.getElementById('refineMarker');
+        const angleRad = refAngleDeg * D2R; // reuse angleDeg from existing atan2 pattern
+        const radius = 60; // px, matches refineRing radius
+        refineMarker.style.transform =
+            `translate(${Math.sin(angleRad)*radius - 7}px, ${-Math.cos(angleRad)*radius - 7}px)`;
+        return;
+    }
+
     const starPos = calculateAltAz(activeDSO.ra, activeDSO.dec, userLat, userLon, rightNow);
 
     let rawDeltaAz = starPos.azimuth - smoothedAz;
@@ -485,6 +503,16 @@ function openCamera(dso) {
                 cameraUI.style.display = 'block';
                 requestWakeLock();
 
+                const refineBtn = document.getElementById('refineAlignBtn');
+                if (dso.id === 'NCP' || dso.id === 'SCP') {
+                    refineBtn.style.display = 'block';
+                    window.activeRefineStar = dsoDatabase.find(d =>
+                        d.id === (dso.id === 'NCP' ? 'POLARIS' : 'SIGOCT'));
+                } else {
+                    refineBtn.style.display = 'none';
+                    window.activeRefineStar = null;
+                }
+
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                     DeviceOrientationEvent.requestPermission().then(permissionState => {
                         if (permissionState === 'granted') window.addEventListener('deviceorientation', handleAR);
@@ -524,6 +552,42 @@ function closeCamera() {
 
     document.getElementById('directionArrow').style.display = 'none';
     document.getElementById('yellowDot').style.display = 'none';
+
+    document.getElementById('refineAlignBtn').style.display = 'none';
+    window.refineModeActive = false;
+    window.activeRefineStar = null;
+    document.getElementById('refineRing').style.display = 'none';
+    document.getElementById('refineMarker').style.display = 'none';
+    document.getElementById('refineInfo').style.display = 'none';
 }
+
+window.refineModeActive = false;
+
+function toggleRefineMode() {
+    window.refineModeActive = !window.refineModeActive;
+
+    const arrow = document.getElementById('directionArrow');
+    const dot = document.getElementById('yellowDot');
+    const refineRing = document.getElementById('refineRing');
+    const refineMarker = document.getElementById('refineMarker');
+    const refineInfo = document.getElementById('refineInfo');
+
+    if (window.refineModeActive) {
+        arrow.style.display = 'none';
+        dot.style.display = 'none';
+        refineRing.style.display = 'block';
+        refineMarker.style.display = 'block';
+        refineInfo.style.display = 'block';
+        if (window.activeRefineStar) {
+            refineInfo.innerText = `Match ${window.activeRefineStar.name} to the dot`;
+        }
+    } else {
+        refineRing.style.display = 'none';
+        refineMarker.style.display = 'none';
+        refineInfo.style.display = 'none';
+    }
+}
+
+document.getElementById('refineAlignBtn').addEventListener('click', toggleRefineMode);
 
 document.getElementById('backButton').addEventListener('click', closeCamera);
