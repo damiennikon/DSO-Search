@@ -388,10 +388,25 @@ function smoothAngle(current, target, factor = 0.15) {
     return (current + delta * factor + 360) % 360;
 }
 
+function computeTiltCompensatedHeading(alpha, beta, gamma) {
+    const aR = alpha * D2R, bR = beta * D2R, gR = gamma * D2R;
+    const cA = Math.cos(aR), sA = Math.sin(aR);
+    const cB = Math.cos(bR), sB = Math.sin(bR);
+    const cG = Math.cos(gR), sG = Math.sin(gR);
+    const rA = -cA * sG - sA * sB * cG;
+    const rB = -sA * sG + cA * sB * cG;
+    let heading = Math.atan(rA / rB);
+    if (rB < 0) heading += Math.PI;
+    else if (rA < 0) heading += 2 * Math.PI;
+    heading *= R2D;
+    return (360 - heading) % 360;
+}
+
 function handleAR(event) {
     if (!activeDSO || userLat === null || userLon === null) return;
 
-    let rawAz = event.webkitCompassHeading || (360 - event.alpha);
+    let rawAz = event.webkitCompassHeading ||
+        computeTiltCompensatedHeading(event.alpha, event.beta, event.gamma);
     let targetPhoneAz = (rawAz + localDeclination) % 360; // DYNAMIC SAVED DECLINATION
     
     smoothedAz = smoothAngle(smoothedAz, targetPhoneAz);
