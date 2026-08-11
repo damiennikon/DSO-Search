@@ -415,13 +415,13 @@ function handleAR(event) {
     if (distanceToTarget < 0.8) {
         arrow.style.display = 'none'; 
         dot.style.display = 'block';
-        dot.style.backgroundColor = '#008800'; 
-        dot.style.boxShadow = '0 0 10px #008800, 0 0 20px #008800';
+        dot.style.color = '#008800';
+        dot.style.filter = 'drop-shadow(0 0 10px #008800) drop-shadow(0 0 20px #008800)';
     } else if (distanceToTarget < 5) {
-        arrow.style.display = 'none'; 
+        arrow.style.display = 'none';
         dot.style.display = 'block';
-        dot.style.backgroundColor = '#cc6600'; 
-        dot.style.boxShadow = '0 0 10px #cc6600, 0 0 20px #cc6600';
+        dot.style.color = '#cc6600';
+        dot.style.filter = 'drop-shadow(0 0 10px #cc6600) drop-shadow(0 0 20px #cc6600)';
     } else {
         dot.style.display = 'none';
         arrow.style.display = 'block'; 

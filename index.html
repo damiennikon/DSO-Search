@@ -76,8 +76,14 @@
             <div style="width: 60px;"></div>
         </div>
         <div class="crosshair-center"></div>
-        <div id="directionArrow">➔</div>
-        <div id="yellowDot"></div>
+        <div id="directionArrow">↑</div>
+        <svg id="yellowDot" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="30" cy="30" r="12" stroke="currentColor" stroke-width="2"/>
+            <line x1="30" y1="2" x2="30" y2="16" stroke="currentColor" stroke-width="2"/>
+            <line x1="30" y1="44" x2="30" y2="58" stroke="currentColor" stroke-width="2"/>
+            <line x1="2" y1="30" x2="16" y2="30" stroke="currentColor" stroke-width="2"/>
+            <line x1="44" y1="30" x2="58" y2="30" stroke="currentColor" stroke-width="2"/>
+        </svg>
         <div class="compass-widget">
             <div id="compassNeedle"></div>
         </div>

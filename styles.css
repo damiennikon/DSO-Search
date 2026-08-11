@@ -108,7 +108,7 @@ body { background-color: var(--bg-black); color: var(--red-main); font-family: "
 #activeTargetName { color: var(--red-bright); font-weight: 800; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--red-bright); }
 .crosshair-center { position: absolute; top: 50%; left: 50%; width: 2px; height: 60px; background: var(--red-glow-strong); transform: translate(-50%, -50%); pointer-events: none; }
 .crosshair-center::after { content: ''; position: absolute; top: 50%; left: 50%; width: 60px; height: 2px; background: var(--red-glow-strong); transform: translate(-50%, -50%); }
-#yellowDot { position: absolute; top: 50%; left: 50%; width: 24px; height: 24px; border-radius: 50%; display: none; transform: translate(-50%, -50%); }
+#yellowDot { position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; display: none; transform: translate(-50%, -50%); }
 #directionArrow { position: absolute; top: 50%; left: 50%; font-size: 40px; display: none; margin-top: -20px; margin-left: -20px; line-height: 40px; text-align: center; width: 40px; height: 40px; }
 .compass-widget { position: absolute; bottom: 30px; right: 20px; width: 60px; height: 60px; border: 2px solid var(--red-dim); border-radius: 50%; background: rgba(0,0,0,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.9); }
 #compassNeedle { position: absolute; top: 5%; left: 45%; width: 10%; height: 90%; background: linear-gradient(to bottom, var(--red-bright) 50%, transparent 50%); transform-origin: center; border-radius: 4px; box-shadow: 0 0 5px var(--red-bright); }
