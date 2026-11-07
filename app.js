@@ -14,15 +14,24 @@ let isListExpanded = false;
 let activeCategory = 'All';
 
 // --- MAGNETIC DECLINATION MEMORY ---
-let localDeclination = parseFloat(localStorage.getItem('magDeclination')) || 11.0;
+const savedDeclination = Number.parseFloat(localStorage.getItem('magDeclination'));
+let localDeclination = Number.isFinite(savedDeclination) ? savedDeclination : 0;
+let declinationSource = Number.isFinite(savedDeclination) ? 'saved' : 'manual';
 
 document.addEventListener('DOMContentLoaded', () => {
     const magDecInput = document.getElementById('magDecInput');
     if(magDecInput) {
         magDecInput.value = localDeclination;
         magDecInput.addEventListener('change', (e) => {
-            localDeclination = parseFloat(e.target.value) || 0;
-            localStorage.setItem('magDeclination', localDeclination);
+            const parsed = Number.parseFloat(e.target.value);
+            if (!Number.isFinite(parsed) || parsed < -30 || parsed > 30) {
+                e.target.value = localDeclination;
+                return;
+            }
+            localDeclination = parsed;
+            declinationSource = 'manual';
+            localStorage.setItem('magDeclination', String(localDeclination));
+            updateDeclinationStatus();
         });
     }
 });
@@ -164,6 +173,34 @@ let userLat = null;
 let userLon = null;
 const moonSafeNebulae = ["NGC 3372", "M 8", "M 42", "NGC 2070"];
 
+function normalizeSearch(value) {
+    return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function searchableDSOText(dso) {
+    return normalizeSearch([
+        dso.id,
+        dso.name,
+        dso.constellation || '',
+        ...(Array.isArray(dso.aliases) ? dso.aliases : [])
+    ].join(' '));
+}
+
+function updateDeclinationStatus() {
+    const box = document.getElementById('magDecSuggestion');
+    if (!box) return;
+    const sourceText = declinationSource === 'NOAA' ? 'NOAA WMM result' :
+        (declinationSource === 'saved' ? 'saved setting' : 'manual setting');
+    box.textContent = 'True-north correction: ' + localDeclination.toFixed(1) + '° (' + sourceText + ').';
+}
+
+function updateLocationStatus(message, isError = false) {
+    const status = document.getElementById('locationStatus');
+    if (!status) return;
+    status.textContent = message;
+    status.className = isError ? 'location-status error' : 'location-status';
+}
+
 function updateDSOVisibility() {
     if (userLat === null || userLon === null) return;
     const rightNow = new Date();
@@ -217,9 +254,12 @@ function updateDSOVisibility() {
             statusText.innerText = "DAYLIGHT";
             statusText.className = "dso-status status-warn";
         } else {
-            button.classList.remove('dimmed');
+            button.classList.toggle('dimmed', position.altitude < 15);
             if (position.altitude < 0 && dso.type === 'Alignment') {
                 statusText.innerText = "REVERSE ALIGN";
+                statusText.className = "dso-status status-warn";
+            } else if (position.altitude < 15) {
+                statusText.innerText = "LOW ALTITUDE";
                 statusText.className = "dso-status status-warn";
             } else {
                 statusText.innerText = "VISIBLE";
@@ -228,7 +268,7 @@ function updateDSOVisibility() {
         }
         
         let categoryMatch = (activeCategory === 'All') || dso.type.includes(activeCategory);
-        const isSearchMatch = currentSearch === '' || dso.id.toLowerCase().includes(currentSearch) || dso.name.toLowerCase().includes(currentSearch);
+        const isSearchMatch = currentSearch === '' || searchableDSOText(dso).includes(normalizeSearch(currentSearch));
         
         let moonSafeMatch = true;
         if (isMoonModeActive) {
@@ -269,74 +309,105 @@ renderDSOList();
 let hasFetchedDeclination = false; 
 
 function fetchDeclination(lat, lon) {
-    if (hasFetchedDeclination) return;
-    
     const suggestionBox = document.getElementById('magDecSuggestion');
     if (!suggestionBox) return;
-
-    suggestionBox.innerHTML = `📡 <em>Detecting local magnetic declination...</em>`;
-
-    // 1. Fetch NOAA Magnetic Data FIRST (Most Important)
-    fetch(`https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination?lat1=${lat}&lon1=${lon}&resultFormat=json`)
-        .then(res => res.json())
-        .then(magData => {
-            hasFetchedDeclination = true;
-            if (magData && magData.result && magData.result[0]) {
-                let detectedDec = magData.result[0].declination.toFixed(1);
-                
-                // 2. Try to get the City Name (OpenStreetMap) - if this fails, we don't care!
-                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
-                    .then(res => res.json())
-                    .then(geoData => {
-                        let cityName = "Your Location";
-                        if (geoData.address) {
-                            cityName = geoData.address.city || geoData.address.town || geoData.address.suburb || "Your Location";
-                        }
-                        renderSuggestion(cityName, detectedDec, suggestionBox);
-                    })
-                    .catch(err => {
-                        // City name failed, but we still have the magnetic data!
-                        renderSuggestion("Your GPS Location", detectedDec, suggestionBox);
-                    });
-            }
+    suggestionBox.textContent = 'Looking up magnetic declination…';
+    const url = 'https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination' +
+        '?lat1=' + encodeURIComponent(lat) + '&lon1=' + encodeURIComponent(lon) +
+        '&model=WMM&resultFormat=json';
+    fetch(url)
+        .then((res) => {
+            if (!res.ok) throw new Error('NOAA HTTP ' + res.status);
+            return res.json();
         })
-        .catch(err => {
-            suggestionBox.innerHTML = `⚠️ Auto-detect failed (Offline or Blocked). Please set manually.`;
-            console.log("NOAA API Error:", err);
+        .then((magData) => {
+            const value = Number(magData && magData.result && magData.result[0] && magData.result[0].declination);
+            if (!Number.isFinite(value)) throw new Error('NOAA returned no declination');
+            localDeclination = value;
+            declinationSource = 'NOAA';
+            localStorage.setItem('magDeclination', String(value));
+            const input = document.getElementById('magDecInput');
+            if (input) input.value = value.toFixed(1);
+            updateDeclinationStatus();
+        })
+        .catch((err) => {
+            declinationSource = Number.isFinite(savedDeclination) ? 'saved' : 'manual';
+            const sourceText = Number.isFinite(savedDeclination)
+                ? 'Using your saved correction of ' + localDeclination.toFixed(1) + '°.'
+                : 'Set the correction manually before using AR.';
+            suggestionBox.innerHTML = sourceText +
+                ' NOAA lookup was unavailable. <a href="https://www.ngdc.noaa.gov/geomag/calculators/declinationForm.shtml" target="_blank" rel="noopener">Open NOAA calculator</a>.';
+            console.warn('Magnetic declination lookup failed:', err);
         });
 }
 
-// Helper function to build the clickable UI text
 function renderSuggestion(cityName, detectedDec, suggestionBox) {
-    suggestionBox.innerHTML = `📍 <b>${cityName.toUpperCase()}</b> detected.<br>
-        Local declination is <b>${detectedDec}°</b>.<br>
-        <span style="color: var(--ok-green); font-size: 1.1rem; font-weight: bold; cursor: pointer; text-decoration: underline; display: inline-block; margin-top: 10px;" 
-              onclick="document.getElementById('magDecInput').value = ${detectedDec}; 
-                       document.getElementById('magDecInput').dispatchEvent(new Event('change')); 
-                       this.innerText = '✅ APPLIED!'; this.style.color = 'var(--text-main)'; this.style.textDecoration = 'none';">
-            TAP TO APPLY
-        </span>`;
+    suggestionBox.textContent = 'Magnetic declination: ' + Number(detectedDec).toFixed(1) + '°.';
+}
+function validCoordinates(lat, lon) {
+    return Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
 }
 
-if ("geolocation" in navigator) {
+function setLocation(lat, lon, source) {
+    if (!validCoordinates(lat, lon)) return false;
+    userLat = lat;
+    userLon = lon;
+    localStorage.setItem('dsoLocation', JSON.stringify({ lat, lon }));
+    const latInput = document.getElementById('latitudeInput');
+    const lonInput = document.getElementById('longitudeInput');
+    if (latInput) latInput.value = lat.toFixed(6);
+    if (lonInput) lonInput.value = lon.toFixed(6);
+    updateLocationStatus(source + ': ' + lat.toFixed(4) + '°, ' + lon.toFixed(4) + '°');
+    hasFetchedDeclination = false;
+    updateDSOVisibility();
+    fetchDeclination(lat, lon);
+    return true;
+}
+
+function requestLocation() {
+    if (!('geolocation' in navigator)) {
+        updateLocationStatus('GPS is not available. Enter coordinates manually.', true);
+        return;
+    }
+    updateLocationStatus('Requesting your location…');
     navigator.geolocation.getCurrentPosition(
-        (position) => {
-            userLat = position.coords.latitude;
-            userLon = position.coords.longitude;
-            updateDSOVisibility();
-            fetchDeclination(userLat, userLon); // Trigger auto-detect
+        (position) => setLocation(position.coords.latitude, position.coords.longitude, 'GPS location'),
+        () => {
+            if (userLat === null || userLon === null) {
+                updateLocationStatus('Location permission failed. Enter coordinates manually.', true);
+            } else {
+                updateLocationStatus('Using saved location. GPS permission was unavailable.', true);
+            }
         },
-        (error) => {
-            console.warn("GPS Error or Timeout. Using default coordinates.");
-            userLat = -27.58; // Acacia Ridge / Loganholme default fallback
-            userLon = 153.03; 
-            updateDSOVisibility(); 
-            fetchDeclination(userLat, userLon); // Try fetching anyway with fallback coords
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 300000 }
     );
 }
 
+const savedLocationRaw = localStorage.getItem('dsoLocation');
+if (savedLocationRaw) {
+    try {
+        const savedLocation = JSON.parse(savedLocationRaw);
+        const savedLat = Number(savedLocation.lat);
+        const savedLon = Number(savedLocation.lon);
+        if (validCoordinates(savedLat, savedLon)) setLocation(savedLat, savedLon, 'Saved location');
+    } catch (err) {
+        localStorage.removeItem('dsoLocation');
+    }
+}
+
+const applyLocationBtn = document.getElementById('applyLocationBtn');
+if (applyLocationBtn) {
+    applyLocationBtn.addEventListener('click', () => {
+        const lat = Number.parseFloat(document.getElementById('latitudeInput').value);
+        const lon = Number.parseFloat(document.getElementById('longitudeInput').value);
+        if (!setLocation(lat, lon, 'Manual location')) {
+            updateLocationStatus('Enter valid latitude (-90 to 90) and longitude (-180 to 180).', true);
+        }
+    });
+}
+const requestLocationBtn = document.getElementById('requestLocationBtn');
+if (requestLocationBtn) requestLocationBtn.addEventListener('click', requestLocation);
+requestLocation();
 // Modal Logic
 let activeDSO = null; 
 function openInfoModal(dso) {
@@ -356,14 +427,15 @@ function openInfoModal(dso) {
         const rightNow = new Date();
         const position = calculateAltAz(dso.ra, dso.dec, userLat, userLon, rightNow);
         
+        const altitudeColor = position.altitude < 0 ? '#881111' : (position.altitude < 15 ? '#cc6600' : '#008800');
+        altDisplay.innerHTML = 'Altitude: <span style="color:' + altitudeColor + '">' + position.altitude + '°</span>' +
+            ' &nbsp; Azimuth: <span>' + position.azimuth + '°</span>';
         if (position.altitude < 0 && dso.type !== 'Alignment') {
-            altDisplay.innerHTML = `Altitude: <span style="color:#881111">${position.altitude}°</span>`;
             locateBtn.disabled = true;
-            locateBtn.innerText = "Below Horizon";
+            locateBtn.innerText = 'Below Horizon';
         } else {
-            altDisplay.innerHTML = `Altitude: <span style="color:#008800">${position.altitude}°</span>`;
             locateBtn.disabled = false;
-            locateBtn.innerText = "Locate in Sky";
+            locateBtn.innerText = position.altitude < 15 ? 'Locate in Sky (Low)' : 'Locate in Sky';
         }
     }
     document.getElementById('infoModal').style.display = 'flex';
@@ -381,60 +453,99 @@ document.getElementById('locateBtn').addEventListener('click', () => {
 let activeStream = null;
 let wakeLock = null;
 let smoothedAz = null;
+let smoothedAlt = null;
 
-function smoothAngle(current, target, factor = 0.15) {
-    if (current === null) return target;
-    let delta = ((target - current + 540) % 360) - 180;
-    return (current + delta * factor + 360) % 360;
+function normalizeAngle(angle) {
+    return ((angle % 360) + 360) % 360;
+}
+
+function signedAngleDelta(target, current) {
+    return ((target - current + 540) % 360) - 180;
+}
+
+function smoothAngle(current, target, factor = 0.2) {
+    if (current === null) return normalizeAngle(target);
+    return normalizeAngle(current + signedAngleDelta(target, current) * factor);
+}
+
+function getCameraPointing(event) {
+    const beta = Number(event.beta);
+    const gamma = Number(event.gamma);
+    if (!Number.isFinite(beta) || !Number.isFinite(gamma)) return null;
+    const bx = beta * D2R;
+    const gy = gamma * D2R;
+    const al = Number(event.alpha) * D2R;
+    const cX = Math.cos(bx), cY = Math.cos(gy), cZ = Math.cos(al);
+    const sX = Math.sin(bx), sY = Math.sin(gy), sZ = Math.sin(al);
+    // W3C Z-X'-Y'' rotation; the camera points along body vector [0,0,-1].
+    const m13 = cY * sZ * sX + cZ * sY;
+    const m23 = sZ * sY - cZ * cY * sX;
+    const m33 = cX * cY;
+    const up = -m33;
+    let azimuth;
+    let east;
+    let north;
+    const iosMagneticHeading = Number(event.webkitCompassHeading);
+    if (Number.isFinite(iosMagneticHeading) && iosMagneticHeading >= 0) {
+        azimuth = normalizeAngle(iosMagneticHeading + localDeclination);
+        const horizontal = Math.sqrt(Math.max(0, 1 - up * up));
+        east = Math.sin(azimuth * D2R) * horizontal;
+        north = Math.cos(azimuth * D2R) * horizontal;
+    } else if (event.absolute === true && Number.isFinite(Number(event.alpha))) {
+        east = -m13;
+        north = -m23;
+        azimuth = normalizeAngle(Math.atan2(east, north) * R2D + localDeclination);
+    } else {
+        return null;
+    }
+    const horizontalLength = Math.sqrt(east * east + north * north);
+    const altitude = Math.atan2(up, horizontalLength) * R2D;
+    return { azimuth, altitude };
+}
+
+function setARReadout(text) {
+    const readout = document.getElementById('arReadout');
+    if (readout) readout.textContent = text;
 }
 
 function handleAR(event) {
     if (!activeDSO || userLat === null || userLon === null) return;
-
-    let rawAz = event.webkitCompassHeading || (360 - event.alpha);
-    let targetPhoneAz = (rawAz + localDeclination) % 360; // DYNAMIC SAVED DECLINATION
-    
-    smoothedAz = smoothAngle(smoothedAz, targetPhoneAz);
-    let phoneAlt = event.beta - 90; 
-
-    document.getElementById('compassNeedle').style.transform = `rotate(${-smoothedAz}deg)`;
-
-    const rightNow = new Date();
-    const starPos = calculateAltAz(activeDSO.ra, activeDSO.dec, userLat, userLon, rightNow);
-
-    let rawDeltaAz = starPos.azimuth - smoothedAz;
-    let deltaAz = ((rawDeltaAz + 180) % 360 + 360) % 360 - 180;
-    let deltaAlt = starPos.altitude - phoneAlt;
-
-    const distanceToTarget = Math.sqrt((deltaAz * deltaAz) + (deltaAlt * deltaAlt));
-
+    const pointing = getCameraPointing(event);
+    if (!pointing) {
+        setARReadout('Waiting for absolute compass data…');
+        return;
+    }
+    smoothedAz = smoothAngle(smoothedAz, pointing.azimuth, 0.22);
+    smoothedAlt = smoothedAlt === null ? pointing.altitude : smoothedAlt + (pointing.altitude - smoothedAlt) * 0.22;
+    document.getElementById('compassNeedle').style.transform = 'rotate(' + (-smoothedAz) + 'deg)';
+    const starPos = calculateAltAz(activeDSO.ra, activeDSO.dec, userLat, userLon, new Date());
+    const deltaAz = signedAngleDelta(starPos.azimuth, smoothedAz);
+    const deltaAlt = starPos.altitude - smoothedAlt;
+    const distanceToTarget = Math.hypot(deltaAz, deltaAlt);
+    setARReadout('Target ' + starPos.azimuth.toFixed(1) + '° az / ' + starPos.altitude.toFixed(1) + '° alt' +
+        ' · Phone ' + smoothedAz.toFixed(1) + '° / ' + smoothedAlt.toFixed(1) + '°' +
+        ' · Error ' + distanceToTarget.toFixed(1) + '°');
     const dot = document.getElementById('yellowDot');
     const arrow = document.getElementById('directionArrow');
-
-    // 3-Tier Radar
     if (distanceToTarget < 0.8) {
-        arrow.style.display = 'none'; 
+        arrow.style.display = 'none';
         dot.style.display = 'block';
-        dot.style.backgroundColor = '#008800'; 
+        dot.style.backgroundColor = '#008800';
         dot.style.boxShadow = '0 0 10px #008800, 0 0 20px #008800';
     } else if (distanceToTarget < 5) {
-        arrow.style.display = 'none'; 
+        arrow.style.display = 'none';
         dot.style.display = 'block';
-        dot.style.backgroundColor = '#cc6600'; 
+        dot.style.backgroundColor = '#cc6600';
         dot.style.boxShadow = '0 0 10px #cc6600, 0 0 20px #cc6600';
     } else {
         dot.style.display = 'none';
-        arrow.style.display = 'block'; 
+        arrow.style.display = 'block';
         arrow.style.color = '#ff0000';
         arrow.style.textShadow = '0 0 5px #ff0000';
-
-        const angleRad = Math.atan2(deltaAz, deltaAlt);
-        const angleDeg = angleRad * R2D;
-        
-        arrow.style.transform = `translate(-50%, -50%) rotate(${angleDeg}deg) translateY(-80px)`;
+        const angleDeg = Math.atan2(-deltaAlt, deltaAz) * R2D;
+        arrow.style.transform = 'translate(-50%, -50%) rotate(' + angleDeg + 'deg) translateY(-80px)';
     }
 }
-
 async function requestWakeLock() {
     try {
         if ('wakeLock' in navigator) {
@@ -445,44 +556,42 @@ async function requestWakeLock() {
     }
 }
 
-function openCamera(dso) {
+async function openCamera(dso) {
     const cameraUI = document.getElementById('cameraUI');
     const cameraFeed = document.getElementById('cameraFeed');
-    smoothedAz = null; 
-    
+    smoothedAz = null;
+    smoothedAlt = null;
+    setARReadout('Starting sensors…');
     window.removeEventListener('deviceorientation', handleAR);
     window.removeEventListener('deviceorientationabsolute', handleAR);
-    
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(function(stream) {
-                activeStream = stream;
-                cameraFeed.srcObject = stream;
-                document.getElementById('activeTargetName').innerText = dso.name;
-                
-                document.querySelector('main').style.display = 'none';
-                document.querySelector('.app-header').style.display = 'none';
-                const actionRow = document.querySelector('.action-row');
-                if(actionRow) actionRow.style.display = 'none'; 
-                const showMoreBtn = document.getElementById('showMoreBtn');
-                if(showMoreBtn) showMoreBtn.style.display = 'none';
-
-                cameraUI.style.display = 'block';
-                requestWakeLock();
-
-                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    DeviceOrientationEvent.requestPermission().then(permissionState => {
-                        if (permissionState === 'granted') window.addEventListener('deviceorientation', handleAR);
-                    }).catch(console.error);
-                } else {
-                    if ('ondeviceorientationabsolute' in window) window.addEventListener('deviceorientationabsolute', handleAR);
-                    else window.addEventListener('deviceorientation', handleAR);
-                }
-            })
-            .catch(err => alert("Camera access denied."));
+    try {
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+            const permission = await DeviceOrientationEvent.requestPermission();
+            if (permission !== 'granted') throw new Error('Orientation permission was not granted');
+        }
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('Camera is not available in this browser');
+        activeStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: 'environment' } },
+            audio: false
+        });
+        cameraFeed.srcObject = activeStream;
+        document.getElementById('activeTargetName').innerText = dso.name;
+        document.querySelector('main').style.display = 'none';
+        document.querySelector('.app-header').style.display = 'none';
+        const actionRow = document.querySelector('.action-row');
+        if (actionRow) actionRow.style.display = 'none';
+        if (showMoreBtn) showMoreBtn.style.display = 'none';
+        cameraUI.style.display = 'block';
+        requestWakeLock();
+        if ('ondeviceorientationabsolute' in window) window.addEventListener('deviceorientationabsolute', handleAR);
+        else window.addEventListener('deviceorientation', handleAR);
+    } catch (err) {
+        if (activeStream) activeStream.getTracks().forEach((track) => track.stop());
+        activeStream = null;
+        setARReadout('Sensors unavailable: ' + (err.message || 'check permissions'));
+        alert('Unable to start AR: ' + (err.message || 'check camera and motion permissions.'));
     }
 }
-
 function closeCamera() {
     if (activeStream) {
         activeStream.getTracks().forEach(track => track.stop());
@@ -509,6 +618,8 @@ function closeCamera() {
 
     document.getElementById('directionArrow').style.display = 'none';
     document.getElementById('yellowDot').style.display = 'none';
+    smoothedAz = null;
+    smoothedAlt = null;
 }
 
 document.getElementById('backButton').addEventListener('click', closeCamera);
