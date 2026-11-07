@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dso-tracker-v33';
+const CACHE_NAME = 'dso-tracker-v34';
 
 // List of all files the app needs to work offline
 const ASSETS_TO_CACHE = [
@@ -7,6 +7,7 @@ const ASSETS_TO_CACHE = [
     './database.js',
     './app.js',
     './manifest.json',
+    './styles.css',
     './Galaxy.png',
     './Nebula.png',
     './Cluster.png'
@@ -46,15 +47,9 @@ self.addEventListener('activate', (event) => {
 // 3. FETCH EVENT: Serve from cache if available, otherwise use the network
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            // Return the cached file if we have it
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-            // Otherwise, fetch it from the network
-            return fetch(event.request).catch(() => {
-                console.log('[Service Worker] Network fetch failed, and no cache found.');
-            });
+        caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
+            if (cachedResponse) return cachedResponse;
+            return fetch(event.request).catch(() => Response.error());
         })
     );
 });
