@@ -47,7 +47,7 @@ self.addEventListener('activate', (event) => {
 // 3. FETCH EVENT: Serve from cache if available, otherwise use the network
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
+        caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
             if (cachedResponse) return cachedResponse;
             return fetch(event.request).catch(() => Response.error());
         })
