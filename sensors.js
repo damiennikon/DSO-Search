@@ -125,6 +125,7 @@
             if (!Number.isFinite(beta) || !Number.isFinite(gamma)) return null;
 
             const alpha = Number(event.alpha);
+            const alphaValid = event.alpha !== null && event.alpha !== undefined && Number.isFinite(alpha);
             const bx = beta * D2R;
             const gy = gamma * D2R;
             const al = alpha * D2R;
@@ -155,7 +156,7 @@
                 east = Math.sin(azimuth * D2R) * horizontal;
                 north = Math.cos(azimuth * D2R) * horizontal;
                 source = 'iOS magnetic heading';
-            } else if (event.absolute === true && Number.isFinite(alpha)) {
+            } else if (event.absolute === true && alphaValid) {
                 east = -m13;
                 north = -m23;
                 azimuth = DSOAstronomy.normalizeAngle(
