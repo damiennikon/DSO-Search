@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DSO Tracker</title>
     <link rel="manifest" href="./manifest.json">
-    <link rel="stylesheet" href="./styles.css?v=6">
+    <link rel="stylesheet" href="./styles.css?v=7">
 </head>
 <body>
 
@@ -17,8 +17,20 @@
         
         <label class="moon-toggle-container">
             <input type="checkbox" id="moonFilterToggle">
-            Moon Filter Active
+            Bright-moon mode (rough filter)
         </label>
+
+        <div class="location-controls">
+            <div class="location-inputs">
+                <label>Lat <input id="latitudeInput" type="number" step="0.000001" min="-90" max="90" placeholder="Latitude"></label>
+                <label>Lon <input id="longitudeInput" type="number" step="0.000001" min="-180" max="180" placeholder="Longitude"></label>
+            </div>
+            <div class="location-actions">
+                <button id="requestLocationBtn" type="button">Use GPS</button>
+                <button id="applyLocationBtn" type="button">Use Coordinates</button>
+            </div>
+            <div id="locationStatus" class="location-status">Location not set</div>
+        </div>
 
         <div class="category-filters">
             <button class="cat-btn active" data-cat="All">All</button>
@@ -42,7 +54,7 @@
             <div style="margin-bottom: 20px; background: var(--surface-dark); padding: 15px; border-radius: 6px; border: 1px solid var(--red-border); text-align: left;">
                 <label style="color: var(--red-dim); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Magnetic Declination (°)</label>
                 <input type="number" id="magDecInput" step="0.1" style="width: 100%; padding: 10px; background: #000; border: 1px solid var(--red-border); color: var(--red-bright); font-size: 1.1rem; border-radius: 6px; font-weight: bold; font-family: monospace;">
-                <p id="magDecSuggestion" style="font-size: 0.85rem; color: var(--warn-amber); margin-top: 12px; line-height: 1.4;">Set to your local offset. This saves automatically for offline field use.</p>
+                <p id="magDecSuggestion" style="font-size: 0.85rem; color: var(--warn-amber); margin-top: 12px; line-height: 1.4;">Set the true-north correction used by the phone compass. Positive values are east declination.</p>
             </div>
 
             <button id="btnSCP" class="modal-btn btn-primary">Locate SCP (South)</button>
@@ -76,6 +88,7 @@
             <div style="width: 60px;"></div>
         </div>
         <div class="crosshair-center"></div>
+        <div id="arReadout">Starting sensors…</div>
         <div id="directionArrow">➔</div>
         <div id="yellowDot"></div>
         <div class="compass-widget">
