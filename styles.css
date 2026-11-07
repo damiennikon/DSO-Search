@@ -1,127 +1,230 @@
-/* ========================================================
-   DSO TRACKER: TACTICAL NIGHT VISION UI (2x2 GRID)
-   ======================================================== */
-
 :root {
-    --bg-black: #030000;       /* Deepest OLED red-black */
-    --surface-dark: #0a0000;   /* Recessed panel background */
-    --surface-light: #1a0000;  /* Elevated panel background */
-    --red-main: #ff3333;       /* Readable body text */
-    --red-bright: #ff0000;     /* Active glowing elements */
-    --red-dim: #881111;        /* Muted text and borders */
-    --red-border: #440000;     /* Structure lines */
-    --red-glow: rgba(255, 0, 0, 0.15);
-    --red-glow-strong: rgba(255, 0, 0, 0.4);
-    --warn-amber: #cc6600;     /* Dim amber for warnings (night-vision safe) */
-    --ok-green: #008800;       /* Dim green for success (night-vision safe) */
+    --bg: #05070a;
+    --panel: #0b1015;
+    --panel-2: #111922;
+    --line: #243341;
+    --text: #e7edf1;
+    --muted: #80909d;
+    --red: #ff3f4f;
+    --amber: #ffb84d;
+    --green: #4ee39b;
+    --blue: #6fc9ff;
+    --shadow: 0 16px 40px rgba(0,0,0,.36);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-body { background-color: var(--bg-black); color: var(--red-main); font-family: "Segoe UI", Roboto, Helvetica, sans-serif; overflow-x: hidden; letter-spacing: 0.3px; }
-
-/* --- HEADER & NAVIGATION --- */
-.app-header { background: linear-gradient(to bottom, var(--surface-light), var(--bg-black)); padding: 20px 16px 10px 16px; border-bottom: 1px solid var(--red-border); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.8); }
-
-/* Search Bar (Tactical Terminal Style) */
-.search-container { display: flex; position: relative; margin-bottom: 18px; }
-#dsoSearchInput { width: 100%; padding: 14px 40px 14px 20px; background-color: var(--surface-dark); border: 1px solid var(--red-border); color: var(--red-bright); border-radius: 8px; font-size: 16px; font-weight: 500; letter-spacing: 1px; transition: all 0.3s; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
-#dsoSearchInput::placeholder { color: var(--red-dim); font-style: italic; }
-#dsoSearchInput:focus { outline: none; border-color: var(--red-bright); background-color: var(--bg-black); box-shadow: 0 0 15px var(--red-glow), inset 0 2px 10px rgba(0,0,0,0.8); }
-#clearSearchBtn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--red-dim); font-size: 24px; display: none; padding: 5px; cursor: pointer; transition: color 0.2s; }
-#clearSearchBtn:active { color: var(--red-bright); }
-
-/* Moon Toggle */
-.moon-toggle-container { margin: 0 0 18px 5px; color: var(--warn-amber); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 12px; font-weight: 700; }
-.moon-toggle-container input { transform: scale(1.5); accent-color: var(--warn-amber); filter: drop-shadow(0 0 5px rgba(204, 102, 0, 0.3)); }
-
-/* Category Filters (HUD Buttons - 2x2 Grid) */
-.category-filters { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 12px; 
-    padding-bottom: 10px; 
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+    margin: 0;
+    background:
+        radial-gradient(circle at 50% -10%, #18232d 0, transparent 42rem),
+        var(--bg);
+    color: var(--text);
+    font: 15px/1.4 "Segoe UI", system-ui, sans-serif;
+    letter-spacing: .2px;
 }
-
-.cat-btn { 
+button, input { font: inherit; }
+button { cursor: pointer; }
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 18px 16px 14px;
+    background: rgba(5,7,10,.94);
+    border-bottom: 1px solid var(--line);
+    backdrop-filter: blur(16px);
+}
+.brand-row, .location-heading, .ar-topbar, .ar-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.eyebrow {
+    margin: 0;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+}
+h1, h2, p { margin-top: 0; }
+h1 {
+    margin-bottom: 0;
+    font-size: 22px;
+    letter-spacing: 3px;
+}
+h2 { margin-bottom: 16px; font-size: 27px; line-height: 1.05; }
+.icon-button, .modal-close {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--amber);
+    border-radius: 10px;
+}
+.icon-button { width: 44px; height: 44px; font-size: 26px; }
+.modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    font-size: 25px;
+}
+.search-container { position: relative; margin-top: 18px; }
+#dsoSearchInput {
     width: 100%;
-    background-color: var(--surface-dark); 
-    color: var(--red-dim); 
-    border: 1px solid var(--red-border); 
-    padding: 14px 10px; 
-    border-radius: 6px; 
-    font-size: 0.85rem; 
-    font-weight: 700; 
-    text-transform: uppercase; 
-    letter-spacing: 1px; 
-    transition: all 0.2s ease; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.5); 
+    padding: 15px 46px 15px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    outline: 0;
+    background: var(--panel);
+    color: var(--text);
+    font-size: 16px;
 }
-
-.cat-btn.active { 
-    background-color: var(--red-glow); 
-    color: var(--red-bright); 
-    border-color: var(--red-bright); 
-    box-shadow: 0 0 10px var(--red-glow-strong), inset 0 0 8px var(--red-glow); 
-    text-shadow: 0 0 5px var(--red-bright); 
+#dsoSearchInput:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(111,201,255,.12); }
+#clearSearchBtn {
+    display: none;
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 25px;
 }
-
-/* --- MAIN ACTIONS (Polar Align) --- */
-.action-row { display: flex; padding: 20px 16px 10px 16px; }
-.action-btn { flex: 1; padding: 16px; background: linear-gradient(135deg, var(--surface-light), var(--surface-dark)); border: 1px dashed var(--red-dim); color: var(--red-main); border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; }
-.action-btn:active { background: var(--red-glow); border-style: solid; border-color: var(--red-bright); color: var(--red-bright); box-shadow: 0 0 15px var(--red-glow); }
-
-/* --- DSO LIST (Target Cards) --- */
-#dsoList { padding: 10px 16px 20px 16px; display: flex; flex-direction: column; gap: 12px; }
-.dso-item { display: flex; align-items: center; background: linear-gradient(to right, var(--surface-light), var(--surface-dark)); border: 1px solid var(--red-border); border-left: 4px solid var(--red-dim); padding: 14px; border-radius: 6px; text-align: left; color: var(--red-main); transition: all 0.15s; box-shadow: 0 4px 10px rgba(0,0,0,0.6); }
-.dso-item:active { transform: scale(0.97); border-left-color: var(--red-bright); background: var(--surface-dark); box-shadow: 0 0 15px var(--red-glow); }
-.dso-item.dimmed { opacity: 0.4; border-left-color: var(--bg-black); background: var(--bg-black); }
-
-.dso-icon { width: 48px; height: 48px; margin-right: 16px; flex-shrink: 0; display: flex; justify-content: center; align-items: center; background: var(--bg-black); border: 1px solid var(--red-border); border-radius: 6px; padding: 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
-.dso-text-group { flex: 1; }
-.dso-id { font-weight: 800; font-size: 1.2rem; color: var(--red-bright); text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 5px var(--red-glow-strong); }
-.dso-name { font-size: 0.85rem; color: var(--red-dim); margin-top: 4px; font-weight: 500; }
-.dso-status { font-size: 0.7rem; margin-top: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-
-.status-up { color: var(--ok-green); text-shadow: 0 0 5px rgba(0, 136, 0, 0.4); }
-.status-down { color: var(--red-dim); }
-.status-warn { color: var(--warn-amber); text-shadow: 0 0 5px rgba(204, 102, 0, 0.4); }
-.dso-arrow { font-size: 1.8rem; color: var(--red-border); font-weight: 300; padding-left: 10px; }
-
-#showMoreBtn { width: calc(100% - 32px); margin: 0 16px 30px 16px; padding: 16px; background-color: var(--surface-dark); border: 1px solid var(--red-border); color: var(--red-dim); border-radius: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: none; }
-#showMoreBtn:active { background-color: var(--surface-light); border-color: var(--red-dim); }
-
-/* --- MODALS --- */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 200; padding: 24px; backdrop-filter: blur(5px); }
-.modal-content { background: var(--bg-black); border-radius: 8px; border: 1px solid var(--red-bright); width: 100%; max-width: 380px; padding: 24px; text-align: center; box-shadow: 0 0 30px var(--red-glow-strong); }
-.modal-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin: 24px 0; font-size: 0.85rem; background: var(--surface-dark); padding: 16px; border-radius: 6px; border: 1px solid var(--red-border); }
-.modal-info-grid strong { color: var(--red-dim); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; display: block; margin-bottom: 2px; }
-.modal-desc { text-align: left; font-size: 0.9rem; color: var(--red-main); margin-bottom: 24px; line-height: 1.6; padding: 0 5px; }
-.modal-btn { width: 100%; padding: 16px; margin-top: 12px; border-radius: 6px; font-weight: 800; border: none; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1.5px; }
-.btn-primary { background-color: var(--red-bright); color: var(--bg-black); box-shadow: 0 0 15px var(--red-glow-strong); }
-.btn-secondary { background-color: transparent; border: 1px solid var(--red-dim); color: var(--red-main); }
-
-/* --- AR CAMERA HUD --- */
-#cameraUI { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #000; z-index: 300; }
-#cameraFeed { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; /* Dims the camera feed slightly for night vision */ }
-.hud-top { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.95), transparent); }
-#backButton { background: rgba(0,0,0,0.8); border: 1px solid var(--red-bright); color: var(--red-bright); padding: 10px 20px; border-radius: 6px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 10px var(--red-glow); }
-#activeTargetName { color: var(--red-bright); font-weight: 800; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--red-bright); }
-.crosshair-center { position: absolute; top: 50%; left: 50%; width: 2px; height: 60px; background: var(--red-glow-strong); transform: translate(-50%, -50%); pointer-events: none; }
-.crosshair-center::after { content: ''; position: absolute; top: 50%; left: 50%; width: 60px; height: 2px; background: var(--red-glow-strong); transform: translate(-50%, -50%); }
-#yellowDot { position: absolute; top: 50%; left: 50%; width: 24px; height: 24px; border-radius: 50%; display: none; transform: translate(-50%, -50%); }
-#directionArrow { position: absolute; top: 50%; left: 50%; font-size: 40px; display: none; margin-top: -20px; margin-left: -20px; line-height: 40px; text-align: center; width: 40px; height: 40px; }
-.compass-widget { position: absolute; bottom: 30px; right: 20px; width: 60px; height: 60px; border: 2px solid var(--red-dim); border-radius: 50%; background: rgba(0,0,0,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.9); }
-#compassNeedle { position: absolute; top: 5%; left: 45%; width: 10%; height: 90%; background: linear-gradient(to bottom, var(--red-bright) 50%, transparent 50%); transform-origin: center; border-radius: 4px; box-shadow: 0 0 5px var(--red-bright); }
-
-
-/* Location and AR diagnostics */
-.location-controls { margin: 0 0 18px 5px; padding: 12px; border: 1px solid var(--red-border); border-radius: 6px; background: var(--surface-dark); }
-.location-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.location-inputs label { color: var(--red-dim); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.8px; }
-.location-inputs input { width: 100%; margin-top: 5px; padding: 8px; background: #000; border: 1px solid var(--red-border); color: var(--red-bright); border-radius: 4px; }
+.location-card {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(17,25,34,.7);
+}
+.location-heading { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: 1.3px; }
+#locationStatus { color: var(--green); font-size: 11px; letter-spacing: 0; text-transform: none; }
+.location-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.location-inputs label, .calibration-fields label {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+}
+.location-inputs input, .calibration-fields input {
+    width: 100%;
+    margin-top: 4px;
+    padding: 9px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+}
 .location-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-.location-actions button { padding: 9px 6px; background: var(--surface-light); border: 1px solid var(--red-dim); color: var(--red-main); border-radius: 4px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; }
-.location-status { margin-top: 8px; color: var(--ok-green); font-size: 0.72rem; line-height: 1.35; }
-.location-status.error { color: var(--warn-amber); }
-#arReadout { position: absolute; left: 12px; right: 12px; bottom: 24px; padding: 10px; color: var(--red-bright); background: rgba(0,0,0,0.78); border: 1px solid var(--red-dim); border-radius: 5px; text-align: center; font: 700 0.72rem/1.35 monospace; letter-spacing: 0.2px; }
-.compass-widget { bottom: 105px; }
+.location-actions button, .cat-btn {
+    padding: 9px 8px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-2);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+}
+.moon-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 2px;
+    color: var(--amber);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+.moon-toggle-container span { color: var(--muted); font-weight: 500; text-transform: none; }
+.moon-toggle-container input { accent-color: var(--amber); transform: scale(1.15); }
+.category-filters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+.cat-btn.active { border-color: var(--red); color: var(--red); background: rgba(255,63,79,.09); }
+.action-row { padding: 16px; }
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 16px;
+    border: 1px solid var(--red);
+    border-radius: 13px;
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(255,63,79,.17), rgba(255,63,79,.04));
+    box-shadow: var(--shadow);
+    text-align: left;
+}
+.action-btn strong, .action-btn small { display: block; }
+.action-btn small { margin-top: 2px; color: var(--muted); font-size: 11px; }
+.action-icon { color: var(--red); font-size: 25px; }
+#dsoList { display: flex; flex-direction: column; gap: 9px; padding: 0 16px 22px; }
+.dso-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 13px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: linear-gradient(110deg, var(--panel-2), var(--panel));
+    color: var(--text);
+    text-align: left;
+    box-shadow: 0 5px 18px rgba(0,0,0,.18);
+}
+.dso-item:active { transform: scale(.985); }
+.dso-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; padding: 7px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); }
+.dso-icon img, .dso-icon svg { width: 100%; height: 100%; object-fit: contain; }
+.dso-text-group { min-width: 0; flex: 1; }
+.dso-id { color: var(--red); font-size: 16px; font-weight: 800; letter-spacing: .8px; }
+.dso-name { overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.dso-status { margin-top: 4px; color: var(--green); font-size: 10px; font-weight: 800; letter-spacing: 1px; }
+.status-down { color: #6b7780; }
+.status-warn { color: var(--amber); }
+.dso-arrow { color: var(--muted); font-size: 24px; }
+.dso-item.dimmed { opacity: .64; }
+.show-more { display: none; width: calc(100% - 32px); margin: 0 16px 30px; padding: 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--muted); font-weight: 800; text-transform: uppercase; }
+.status-message { padding: 28px 18px; color: var(--muted); text-align: center; }
+.modal-overlay { display: none; position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,.82); backdrop-filter: blur(12px); }
+.modal-card { position: relative; width: min(100%, 420px); padding: 28px 22px 22px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); box-shadow: var(--shadow); }
+.modal-icon { width: 58px; height: 58px; margin-bottom: 14px; }
+.modal-icon img, .modal-icon svg { width: 100%; height: 100%; object-fit: contain; }
+.modal-card h2 { margin-bottom: 8px; }
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; padding: 13px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.modal-grid span { display: block; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: 1px; }
+.modal-grid strong { display: block; margin-top: 3px; font-size: 13px; }
+.modal-description { color: var(--muted); line-height: 1.6; }
+.modal-button { width: 100%; margin-top: 10px; padding: 14px; border-radius: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+.primary-action { border: 1px solid var(--red); background: var(--red); color: #180306; }
+.secondary-action { border: 1px solid var(--line); background: var(--panel-2); color: var(--text); }
+.ghost-action { border: 0; background: transparent; color: var(--muted); }
+.calibration-visual { display: grid; place-items: center; height: 100px; margin: 8px 0 12px; border: 1px dashed var(--amber); border-radius: 12px; color: var(--amber); font-size: 76px; line-height: 1; }
+.calibration-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 16px; }
+#arUI { display: none; position: fixed; inset: 0; z-index: 100; overflow: hidden; background: #020303; }
+#cameraFeed { width: 100%; height: 100%; object-fit: cover; }
+.ar-shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,.65), transparent 25%, transparent 65%, rgba(0,0,0,.72)); }
+.ar-topbar { position: absolute; top: 0; left: 0; right: 0; padding: max(18px, env(safe-area-inset-top)) 16px 16px; }
+#backButton { padding: 10px 13px; border: 1px solid var(--line); border-radius: 9px; background: rgba(5,7,10,.78); color: var(--text); font-weight: 800; }
+#activeTargetName { display: block; margin-top: 2px; font-size: 17px; text-align: center; }
+.ar-mode-mark { color: var(--red); font-weight: 900; letter-spacing: 1px; }
+.reticle { position: absolute; left: 50%; top: 50%; background: rgba(255,255,255,.65); pointer-events: none; }
+.reticle-horizontal { width: 70px; height: 1px; transform: translate(-50%, -50%); }
+.reticle-vertical { width: 1px; height: 70px; transform: translate(-50%, -50%); }
+#targetDot { position: absolute; left: 50%; top: 50%; width: 28px; height: 28px; transform: translate(-50%, -50%); border: 3px solid var(--red); border-radius: 50%; box-shadow: 0 0 0 5px rgba(255,63,79,.13), 0 0 24px rgba(255,63,79,.9); transition: left .08s linear, top .08s linear, border-color .15s, box-shadow .15s; }
+#targetDot span { position: absolute; inset: 8px; border-radius: 50%; background: var(--red); }
+#targetDot.target-on-screen { border-color: var(--amber); box-shadow: 0 0 0 5px rgba(255,184,77,.13), 0 0 24px rgba(255,184,77,.85); }
+#targetDot.target-on-screen span { background: var(--amber); }
+#targetDot.target-locked { border-color: var(--green); box-shadow: 0 0 0 7px rgba(78,227,155,.18), 0 0 28px rgba(78,227,155,.95); }
+#targetDot.target-locked span { background: var(--green); }
+#directionArrow { position: absolute; left: 50%; top: 50%; display: block; color: var(--red); font-size: 47px; line-height: 1; text-shadow: 0 0 18px rgba(255,63,79,.8); transform-origin: 50% 50%; }
+#arReadout { position: absolute; left: 12px; right: 12px; bottom: 78px; padding: 10px 12px; border: 1px solid rgba(255,255,255,.18); border-radius: 10px; background: rgba(5,7,10,.76); color: var(--text); font: 700 11px/1.45 ui-monospace, monospace; text-align: center; }
+.ar-bottom { position: absolute; right: 12px; bottom: max(14px, env(safe-area-inset-bottom)); left: 12px; display: block; }
+#arHint { color: var(--muted); font-size: 11px; text-align: center; }
+#compassStrip { display: flex; justify-content: space-around; margin-top: 8px; padding: 8px; border: 1px solid rgba(255,255,255,.16); border-radius: 9px; background: rgba(5,7,10,.65); color: var(--muted); font-size: 10px; font-weight: 900; }
+@media (min-width: 680px) {
+    body { max-width: 680px; margin: auto; }
+    .app-header { border-radius: 0 0 16px 16px; }
+}

@@ -2,107 +2,141 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DSO Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#05070a">
+    <title>DSO Search · Sky Guide</title>
     <link rel="manifest" href="./manifest.json">
-    <link rel="stylesheet" href="./styles.css?v=7">
+    <link rel="stylesheet" href="./styles.css?v=8">
 </head>
 <body>
-
     <header class="app-header">
-        <div class="search-container">
-            <input type="text" id="dsoSearchInput" placeholder="SEARCH CATALOG...">
-            <button id="clearSearchBtn">×</button>
+        <div class="brand-row">
+            <div>
+                <p class="eyebrow">FIELD NAVIGATION</p>
+                <h1>DSO SEARCH</h1>
+            </div>
+            <button id="calibrationBtn" class="icon-button" type="button" aria-label="Open compass calibration">⌁</button>
         </div>
-        
-        <label class="moon-toggle-container">
-            <input type="checkbox" id="moonFilterToggle">
-            Bright-moon mode (rough filter)
-        </label>
-
-        <div class="location-controls">
+        <div class="search-container">
+            <input type="search" id="dsoSearchInput" placeholder="Search Orion, M42, NGC 1976…" autocomplete="off">
+            <button id="clearSearchBtn" type="button" aria-label="Clear search">×</button>
+        </div>
+        <div class="location-card">
+            <div class="location-heading">
+                <span>LOCATION</span>
+                <span id="locationStatus">Waiting for GPS…</span>
+            </div>
             <div class="location-inputs">
-                <label>Lat <input id="latitudeInput" type="number" step="0.000001" min="-90" max="90" placeholder="Latitude"></label>
-                <label>Lon <input id="longitudeInput" type="number" step="0.000001" min="-180" max="180" placeholder="Longitude"></label>
+                <label>Latitude <input id="latitudeInput" type="number" step="0.000001" min="-90" max="90" placeholder="-27.47"></label>
+                <label>Longitude <input id="longitudeInput" type="number" step="0.000001" min="-180" max="180" placeholder="153.03"></label>
             </div>
             <div class="location-actions">
                 <button id="requestLocationBtn" type="button">Use GPS</button>
-                <button id="applyLocationBtn" type="button">Use Coordinates</button>
+                <button id="applyLocationBtn" type="button">Use coordinates</button>
             </div>
-            <div id="locationStatus" class="location-status">Location not set</div>
         </div>
-
-        <div class="category-filters">
-            <button class="cat-btn active" data-cat="All">All</button>
-            <button class="cat-btn" data-cat="Galaxy">Galaxies</button>
-            <button class="cat-btn" data-cat="Nebula">Nebulae</button>
-            <button class="cat-btn" data-cat="Cluster">Clusters</button>
-        </div>
+        <label class="moon-toggle-container">
+            <input type="checkbox" id="moonFilterToggle">
+            Bright-moon mode <span>rough filter</span>
+        </label>
+        <nav class="category-filters" aria-label="Object categories">
+            <button class="cat-btn active" data-cat="All" type="button">All</button>
+            <button class="cat-btn" data-cat="Galaxy" type="button">Galaxies</button>
+            <button class="cat-btn" data-cat="Nebula" type="button">Nebulae</button>
+            <button class="cat-btn" data-cat="Cluster" type="button">Clusters</button>
+            <button class="cat-btn" data-cat="Star" type="button">Stars</button>
+        </nav>
     </header>
 
-    <div class="action-row">
-        <button id="polarAlignBtn" class="action-btn">🔭 Polar Align</button>
-    </div>
+    <section class="action-row">
+        <button id="polarAlignBtn" class="action-btn primary-action" type="button">
+            <span class="action-icon">✦</span>
+            <span><strong>Polar align</strong><small>Show SCP / NCP target dot</small></span>
+        </button>
+    </section>
 
-    <main id="dsoList"></main>
-    <button id="showMoreBtn">Show More</button>
+    <main id="dsoList" aria-live="polite"></main>
+    <button id="showMoreBtn" class="show-more" type="button"></button>
 
-    <div id="polarModal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 style="margin-bottom: 10px; color: #ff0000; text-transform: uppercase; letter-spacing: 1px;">Mount Alignment</h2>
-            
-            <div style="margin-bottom: 20px; background: var(--surface-dark); padding: 15px; border-radius: 6px; border: 1px solid var(--red-border); text-align: left;">
-                <label style="color: var(--red-dim); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Magnetic Declination (°)</label>
-                <input type="number" id="magDecInput" step="0.1" style="width: 100%; padding: 10px; background: #000; border: 1px solid var(--red-border); color: var(--red-bright); font-size: 1.1rem; border-radius: 6px; font-weight: bold; font-family: monospace;">
-                <p id="magDecSuggestion" style="font-size: 0.85rem; color: var(--warn-amber); margin-top: 12px; line-height: 1.4;">Set the true-north correction used by the phone compass. Positive values are east declination.</p>
+    <div id="infoModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-card">
+            <button id="closeModalBtn" class="modal-close" type="button" aria-label="Close">×</button>
+            <div id="modalIcon" class="modal-icon"></div>
+            <p id="modalId" class="eyebrow"></p>
+            <h2 id="modalTitle"></h2>
+            <div class="modal-grid">
+                <div><span>TYPE</span><strong id="modalType"></strong></div>
+                <div><span>SEASON</span><strong id="modalSeason"></strong></div>
+                <div><span>DISTANCE</span><strong id="modalDist"></strong></div>
+                <div><span>POSITION</span><strong id="modalAlt"></strong></div>
             </div>
-
-            <button id="btnSCP" class="modal-btn btn-primary">Locate SCP (South)</button>
-            <button id="btnNCP" class="modal-btn btn-primary" style="margin-top: 15px;">Locate NCP (North)</button>
-            <button id="closePolarModalBtn" class="modal-btn btn-secondary" style="margin-top: 20px;">Cancel</button>
+            <p id="modalDesc" class="modal-description"></p>
+            <button id="locateBtn" class="modal-button primary-action" type="button">Locate in sky</button>
+            <button id="closeModalBtn2" class="modal-button secondary-action" type="button">Close</button>
         </div>
     </div>
 
-    <div id="infoModal" class="modal-overlay">
-        <div class="modal-content">
-            <div id="modalIcon" style="width: 60px; height: 60px; margin: 0 auto;"></div>
-            <h2 id="modalTitle" style="margin-top: 10px; color: #ff0000;"></h2>
-            <div id="modalId" style="color: #881111; font-weight: bold; letter-spacing: 1px;"></div>
-            <div class="modal-info-grid">
-                <div><strong>Type</strong> <span id="modalType"></span></div>
-                <div><strong>Season</strong> <span id="modalSeason"></span></div>
-                <div><strong>Distance</strong> <span id="modalDist"></span></div>
-                <div id="modalAlt" style="grid-column: span 2; text-align: center; font-weight: bold; margin-top: 10px; font-size: 1.1rem;"></div>
+    <div id="polarModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="polarTitle">
+        <div class="modal-card">
+            <button id="closePolarModalBtn" class="modal-close" type="button" aria-label="Close">×</button>
+            <p class="eyebrow">MOUNT ALIGNMENT</p>
+            <h2 id="polarTitle">Choose your pole</h2>
+            <p class="modal-description">The target dot marks the true celestial pole. Move the mount axis until the dot sits in the centre reticle.</p>
+            <button id="btnSCP" class="modal-button primary-action" type="button">South Celestial Pole</button>
+            <button id="btnNCP" class="modal-button secondary-action" type="button">North Celestial Pole</button>
+            <button id="closePolarModalBtn2" class="modal-button ghost-action" type="button">Cancel</button>
+        </div>
+    </div>
+
+    <div id="calibrationModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="calibrationTitle">
+        <div class="modal-card">
+            <button id="closeCalibrationBtn" class="modal-close" type="button" aria-label="Close">×</button>
+            <p class="eyebrow">SENSOR SETUP</p>
+            <h2 id="calibrationTitle">Compass calibration</h2>
+            <div class="calibration-visual"><span>∞</span></div>
+            <p id="calibrationStatus" class="modal-description">Make a slow figure-eight with the phone. This prompts the phone’s compass sensors to re-estimate the magnetic field.</p>
+            <button id="startCalibrationBtn" class="modal-button primary-action" type="button">Start figure-eight</button>
+            <div class="calibration-fields">
+                <label>Magnetic declination (° E/W)
+                    <input id="declinationInput" type="number" step="0.1" min="-30" max="30">
+                </label>
+                <label>Heading correction (°)
+                    <input id="headingOffsetInput" type="number" step="0.1" min="-30" max="30">
+                </label>
             </div>
-            <div id="modalDesc" class="modal-desc"></div>
-            <button id="locateBtn" class="modal-btn btn-primary">Locate in Sky</button>
-            <button id="closeModalBtn" class="modal-btn btn-secondary">Close</button>
+            <button id="saveCalibrationBtn" class="modal-button secondary-action" type="button">Save correction</button>
         </div>
     </div>
 
-    <div id="cameraUI">
-        <video id="cameraFeed" autoplay playsinline></video>
-        <div class="hud-top">
-            <button id="backButton">❮ Back</button>
-            <div id="activeTargetName">Target</div>
-            <div style="width: 60px;"></div>
+    <div id="arUI">
+        <video id="cameraFeed" autoplay playsinline muted></video>
+        <div class="ar-shade"></div>
+        <div class="ar-topbar">
+            <button id="backButton" type="button">← Back</button>
+            <div>
+                <p id="arStatus" class="eyebrow">SKY TARGET</p>
+                <strong id="activeTargetName">Target</strong>
+            </div>
+            <div class="ar-mode-mark">AR</div>
         </div>
-        <div class="crosshair-center"></div>
+        <div class="reticle reticle-horizontal"></div>
+        <div class="reticle reticle-vertical"></div>
+        <div id="directionArrow">➤</div>
+        <div id="targetDot"><span></span></div>
         <div id="arReadout">Starting sensors…</div>
-        <div id="directionArrow">➔</div>
-        <div id="yellowDot"></div>
-        <div class="compass-widget">
-            <div id="compassNeedle"></div>
+        <div class="ar-bottom">
+            <div id="arHint">Aim the centre reticle at the target dot</div>
+            <div id="compassStrip"><span>N</span><span>E</span><span>S</span><span>W</span></div>
         </div>
     </div>
 
     <script src="./database.js"></script>
+    <script src="./astronomy.js"></script>
+    <script src="./sensors.js"></script>
+    <script src="./ar-view.js"></script>
     <script src="./app.js"></script>
-    
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js');
-        }
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
     </script>
 </body>
 </html>
