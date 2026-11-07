@@ -584,8 +584,10 @@ async function openCamera(dso) {
         if (showMoreBtn) showMoreBtn.style.display = 'none';
         cameraUI.style.display = 'block';
         requestWakeLock();
+        // Listen to both: iOS commonly exposes magnetic heading on deviceorientation,
+        // while Android Chrome may expose absolute heading on deviceorientationabsolute.
+        window.addEventListener('deviceorientation', handleAR);
         if ('ondeviceorientationabsolute' in window) window.addEventListener('deviceorientationabsolute', handleAR);
-        else window.addEventListener('deviceorientation', handleAR);
     } catch (err) {
         if (activeStream) activeStream.getTracks().forEach((track) => track.stop());
         activeStream = null;
