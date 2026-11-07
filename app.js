@@ -7,6 +7,7 @@ const icons = {
     "Nebula": `<img src="./Nebula.png" alt="Nebula" style="width:100%; height:100%; object-fit:contain;" />`,
     "Globular Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain;" />`,
     "Open Cluster": `<img src="./Cluster.png" alt="Cluster" style="width:100%; height:100%; object-fit:contain;" />`,
+    "Star": `<svg viewBox="0 0 24 24" fill="#ff3333"><path d="M12 2l2.8 6.1 6.7.7-5 4.5 1.5 6.6L12 16.5 6 19.9l1.5-6.6-5-4.5 6.7-.7L12 2z"/></svg>`,
     "Alignment": `<svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`
 };
 
