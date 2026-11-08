@@ -6,7 +6,8 @@
     <meta name="theme-color" content="#05070a">
     <title>DSO Search · Sky Guide</title>
     <link rel="manifest" href="./manifest.json">
-    <link rel="stylesheet" href="./styles-v2.css">
+    <meta name="dso-build" content="3">
+    <link rel="stylesheet" href="./assets/styles.css?v=3">
 </head>
 <body>
     <header class="app-header">
@@ -81,7 +82,7 @@
             <button id="closePolarModalBtn" class="modal-close" type="button" aria-label="Close">×</button>
             <p class="eyebrow">MOUNT ALIGNMENT</p>
             <h2 id="polarTitle">Choose your pole</h2>
-            <p class="modal-description">The target dot marks the true celestial pole. Move the mount axis until the dot sits in the centre reticle.</p>
+            <p class="modal-description">Use the dot for rough alignment. Finish with your mount’s polar alignment routine or a polar scope.</p>
             <button id="btnSCP" class="modal-button primary-action" type="button">South Celestial Pole</button>
             <button id="btnNCP" class="modal-button secondary-action" type="button">North Celestial Pole</button>
             <button id="closePolarModalBtn2" class="modal-button ghost-action" type="button">Cancel</button>
@@ -97,7 +98,7 @@
             <p id="calibrationStatus" class="modal-description">Make a slow figure-eight with the phone. This prompts the phone’s compass sensors to re-estimate the magnetic field.</p>
             <button id="startCalibrationBtn" class="modal-button primary-action" type="button">Start figure-eight</button>
             <div class="calibration-fields">
-                <label>Magnetic declination (° E/W)
+                <label>Magnetic declination (° east + / west −)
                     <input id="declinationInput" type="number" step="0.1" min="-30" max="30">
                 </label>
                 <label>Heading correction (°)
@@ -121,22 +122,26 @@
         </div>
         <div class="reticle reticle-horizontal"></div>
         <div class="reticle reticle-vertical"></div>
-        <div id="directionArrow">➤</div>
-        <div id="targetDot"><span></span></div>
+        <div id="directionArrow" hidden>➤</div>
+        <div id="targetDot" hidden><span></span></div>
         <div id="arReadout">Starting sensors…</div>
         <div class="ar-bottom">
             <div id="arHint">Aim the centre reticle at the target dot</div>
-            <div id="compassStrip"><span>N</span><span>E</span><span>S</span><span>W</span></div>
         </div>
     </div>
 
-    <script src="./database-v2.js"></script>
-    <script src="./astronomy-v2.js"></script>
-    <script src="./sensors-v2.js"></script>
-    <script src="./ar-view-v2.js"></script>
-    <script src="./app-v2.js"></script>
+    <script src="./assets/catalog-positions.js?v=3"></script>
+    <script src="./assets/database.js?v=3"></script>
+    <script src="./assets/astronomy.js?v=3"></script>
+    <script src="./assets/sensors.js?v=3"></script>
+    <script src="./assets/ar-view.js?v=3"></script>
+    <script src="./assets/app.js?v=3"></script>
     <script>
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch((error) => {
+                console.warn('Offline setup failed:', error);
+            });
+        }
     </script>
 </body>
 </html>
